@@ -3,7 +3,6 @@ using namespace std;
 
 int SIZE = 15;
 int board[51][51];
-// 一行一列冗余，但方便编程
 
 void SetSize() {
     do {
@@ -69,7 +68,6 @@ void PrintChar(int i, int j) {
         printf("○ ");
     }
 }
-
 
 void PrintBoard() {
     for (int i = SIZE; i >= 1; i--) {
