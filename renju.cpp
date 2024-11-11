@@ -77,7 +77,7 @@ char ToAlpha(int i) {
 
 void PrintChar(int i, int j) {
     if (board[i][j] == 0) {
-        if (i != SIZE) {
+        if (i == SIZE) {
             if (j == 1) {
                 printf("┌─");
             } else if (j == SIZE) {
@@ -177,5 +177,5 @@ void NewGame() {
 
 void ExitGame() {
     printf("程序退出。\n");
-    exit(0);
+    exit(1);
 }
