@@ -2,10 +2,13 @@
 triple:          'arm64-apple-darwin'
 binary-path:     '/Users/Sakuro/Documents/Renju/renju'
 relocations:
-  - { offsetInCU: 0x26, offset: 0x26, size: 0x8, addend: 0x0, symName: __Z15InitializeBoardv, symObjAddr: 0x0, symBinAddr: 0x100003B88, symSize: 0x88 }
-  - { offsetInCU: 0x3F, offset: 0x3F, size: 0x8, addend: 0x0, symName: _board, symObjAddr: 0x6438, symBinAddr: 0x100008000, symSize: 0x0 }
-  - { offsetInCU: 0x3125, offset: 0x3125, size: 0x8, addend: 0x0, symName: __Z15InitializeBoardv, symObjAddr: 0x0, symBinAddr: 0x100003B88, symSize: 0x88 }
-  - { offsetInCU: 0x3177, offset: 0x3177, size: 0x8, addend: 0x0, symName: __Z9PrintCharii, symObjAddr: 0x88, symBinAddr: 0x100003C10, symSize: 0x1E4 }
-  - { offsetInCU: 0x31AD, offset: 0x31AD, size: 0x8, addend: 0x0, symName: __Z10PrintBoardv, symObjAddr: 0x26C, symBinAddr: 0x100003DF4, symSize: 0x120 }
-  - { offsetInCU: 0x321B, offset: 0x321B, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x38C, symBinAddr: 0x100003F14, symSize: 0x30 }
+  - { offsetInCU: 0x26, offset: 0x26, size: 0x8, addend: 0x0, symName: __Z7SetSizev, symObjAddr: 0x0, symBinAddr: 0x1000038AC, symSize: 0x14C }
+  - { offsetInCU: 0x3F, offset: 0x3F, size: 0x8, addend: 0x0, symName: _SIZE, symObjAddr: 0x5C4, symBinAddr: 0x100008000, symSize: 0x0 }
+  - { offsetInCU: 0x5B, offset: 0x5B, size: 0x8, addend: 0x0, symName: _board, symObjAddr: 0x69E4, symBinAddr: 0x100008004, symSize: 0x0 }
+  - { offsetInCU: 0x3129, offset: 0x3129, size: 0x8, addend: 0x0, symName: __Z7SetSizev, symObjAddr: 0x0, symBinAddr: 0x1000038AC, symSize: 0x14C }
+  - { offsetInCU: 0x3142, offset: 0x3142, size: 0x8, addend: 0x0, symName: __Z15InitializeBoardv, symObjAddr: 0x14C, symBinAddr: 0x1000039F8, symSize: 0xA8 }
+  - { offsetInCU: 0x3194, offset: 0x3194, size: 0x8, addend: 0x0, symName: __Z7ToAlphai, symObjAddr: 0x1F4, symBinAddr: 0x100003AA0, symSize: 0x50 }
+  - { offsetInCU: 0x31C0, offset: 0x31C0, size: 0x8, addend: 0x0, symName: __Z9PrintCharii, symObjAddr: 0x244, symBinAddr: 0x100003AF0, symSize: 0x214 }
+  - { offsetInCU: 0x31F6, offset: 0x31F6, size: 0x8, addend: 0x0, symName: __Z10PrintBoardv, symObjAddr: 0x458, symBinAddr: 0x100003D04, symSize: 0x138 }
+  - { offsetInCU: 0x3264, offset: 0x3264, size: 0x8, addend: 0x0, symName: _main, symObjAddr: 0x590, symBinAddr: 0x100003E3C, symSize: 0x34 }
 ...
