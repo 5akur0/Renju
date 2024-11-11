@@ -1,8 +1,50 @@
+
 #include <bits/stdc++.h>
 using namespace std;
 
 int SIZE = 15;
 int board[51][51];
+
+void SetSize();
+void InitializeBoard();
+char ToAlpha(int i);
+void PrintChar(int i, int j);
+void PrintBoard();
+void SaveGame();
+void LoadGame();
+void NewGame();
+void ExitGame();
+
+int main() {
+    int choice;
+    do {
+        cout << "1. 新开始\n";
+        cout << "2. 存盘\n";
+        cout << "3. 读盘\n";
+        cout << "4. 退出\n";
+        cout << "请输入你的选择: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1:
+                NewGame();
+                break;
+            case 2:
+                SaveGame();
+                break;
+            case 3:
+                LoadGame();
+                break;
+            case 4:
+                ExitGame();
+                break;
+            default:
+                cout << "无效的选择，请重新输入。\n";
+        }
+    } while (choice != 4);
+
+    return 0;
+}
 
 void SetSize() {
     do {
@@ -11,7 +53,7 @@ void SetSize() {
             while (getchar() != '\n');
         } else if (SIZE == 0) {
             printf("程序退出。\n");
-            break;
+            exit(0);
         } else if (SIZE < 5 || SIZE > 50) {
             printf("输入无效，请输入一个介于5到50之间的正整数。\n");
         }
@@ -19,7 +61,6 @@ void SetSize() {
     printf("边长已设置为%d。\n", SIZE);
 }
 
-// 1代表黑子(●)，2代表白子(◯)，0代表无子
 void InitializeBoard() {
     for (int i = 0; i < SIZE + 1; i++) {
         for (int j = 0; j < SIZE + 1; j++) {
@@ -84,10 +125,22 @@ void PrintBoard() {
     printf("\n");
 }
 
-int main() {
+void SaveGame() {
+    // 实现存盘功能的代码
+}
+
+void LoadGame() {
+    // 实现读盘功能的代码
+}
+
+void NewGame() {
     SetSize();
     InitializeBoard();
     PrintBoard();
-    return 0;
+    // 实现新游戏的代码
 }
 
+void ExitGame() {
+    printf("程序退出。\n");
+    exit(0);
+}

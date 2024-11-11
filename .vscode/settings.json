@@ -20,6 +20,7 @@
         "unordered_set": "cpp",
         "valarray": "cpp",
         "vector": "cpp",
-        "ratio": "cpp"
+        "ratio": "cpp",
+        "iostream": "cpp"
     }
 }
