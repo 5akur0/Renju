@@ -39,7 +39,7 @@ int main() {
                 ExitGame();
                 break;
             default:
-                printf("无效的选择，请重新输入。\n");
+                printf("无效选择，请重新输入。\n");
         }
     } while (choice != 4);
     return 0;
@@ -47,14 +47,13 @@ int main() {
 
 void SetSize() {
     do {
-        printf("请输入一个介于5到50之间的边长，默认为15（输入0退出）: ");
+        printf("请输入边长（5到50之间），默认为15。输入0可退出：");
         if (scanf("%d", &SIZE) != 1) {
             while (getchar() != '\n');
         } else if (SIZE == 0) {
-            printf("程序退出。\n");
-            exit(0);
+            ExitGame();
         } else if (SIZE < 5 || SIZE > 50) {
-            printf("输入无效，请输入一个介于5到50之间的正整数。\n");
+            printf("输入无效，请输入一个5到50之间的正整数。\n");
         }
     } while (SIZE < 5 || SIZE > 50);
     printf("边长已设置为%d。\n", SIZE);
@@ -176,6 +175,6 @@ void NewGame() {
 }
 
 void ExitGame() {
-    printf("程序退出。\n");
-    exit(1);
+    printf("程序已退出。\n");
+    exit(0);
 }
