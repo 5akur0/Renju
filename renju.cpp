@@ -39,10 +39,9 @@ int main() {
                 ExitGame();
                 break;
             default:
-                cout << "无效的选择，请重新输入。\n";
+                printf("无效的选择，请重新输入。\n");
         }
     } while (choice != 4);
-
     return 0;
 }
 
@@ -126,11 +125,47 @@ void PrintBoard() {
 }
 
 void SaveGame() {
-    // 实现存盘功能的代码
+    FILE *file = fopen("savegame.txt", "w");
+    if (file == NULL) {
+        printf("无法打开文件进行存盘。\n");
+        return;
+    }
+
+    fprintf(file, "%d\n", SIZE);
+    for (int i = 1; i <= SIZE; i++) {
+        for (int j = 1; j <= SIZE; j++) {
+            fprintf(file, "%d ", board[i][j]);
+        }
+        fprintf(file, "\n");
+    }
+
+    fclose(file);
+    printf("游戏已存盘。\n");
 }
 
 void LoadGame() {
-    // 实现读盘功能的代码
+    FILE *file = fopen("savegame.txt", "r");
+    if (file == NULL) {
+        printf("无法打开文件进行读盘。\n");
+        return;
+    }
+
+    fscanf(file, "%d", &SIZE);
+    if (SIZE < 5 || SIZE > 50) {
+        printf("存档文件无效。\n");
+        fclose(file);
+        return;
+    }
+
+    for (int i = 1; i <= SIZE; i++) {
+        for (int j = 1; j <= SIZE; j++) {
+            fscanf(file, "%d", &board[i][j]);
+        }
+    }
+
+    fclose(file);
+    printf("游戏已读盘。\n");
+    PrintBoard();
 }
 
 void NewGame() {
