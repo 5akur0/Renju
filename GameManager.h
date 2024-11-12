@@ -16,13 +16,16 @@ public:
 private:
     Board board;
     AI ai;
-    int moveCount;
+    int moveCount; // 添加这个成员变量
+    int lastMoveX; // 记录最后一次落子的X坐标
+    int lastMoveY; // 记录最后一次落子的Y坐标
     void SetSize();
     void PlayGame();
     bool CheckWin();
-    bool IsBoardFull();
+    bool IsBoardFull(); // 修改这个函数声明
     bool GetPlayerMove(int &x, int &y);
     void PromptSaveAndQuit();
+    bool CheckDirection(int x, int y, int dx, int dy, int player); // 添加这个函数声明
 };
 
 #endif // GAMEMANAGER_H

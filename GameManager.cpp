@@ -5,15 +5,17 @@
 #include <filesystem>
 #include <cctype>
 
-namespace fs = std::filesystem;
+namespace fs = std::__fs::filesystem;
 using namespace std;
 
-GameManager::GameManager() : board(15), ai(), moveCount(0) {}
+GameManager::GameManager() : board(15), ai(), moveCount(0), lastMoveX(-1), lastMoveY(-1) {}
 
 void GameManager::NewGame() {
     SetSize();
     board.Initialize();
     moveCount = 0; // 初始化步数
+    lastMoveX = -1;
+    lastMoveY = -1;
     board.Print();
     PlayGame();
 }
@@ -32,8 +34,12 @@ void GameManager::PlayGame() {
             board.SetCell(x, y, 1); // 玩家使用黑子
         } else { // AI回合
             ai.MakeMove(board);
+            x = lastMoveX;
+            y = lastMoveY;
         }
-        moveCount++;
+        moveCount++; // 更新步数
+        lastMoveX = x;
+        lastMoveY = y;
         board.Print();
         // 检查胜利条件
         if (CheckWin()) {
@@ -80,7 +86,35 @@ bool GameManager::GetPlayerMove(int &x, int &y) {
 }
 
 bool GameManager::CheckWin() {
-    // 实现检查胜利条件的逻辑
+    int player = board.GetCell(lastMoveX, lastMoveY);
+    if (player != 0) {
+        if (CheckDirection(lastMoveX, lastMoveY, 1, 0, player) || // 水平方向
+            CheckDirection(lastMoveX, lastMoveY, 0, 1, player) || // 垂直方向
+            CheckDirection(lastMoveX, lastMoveY, 1, 1, player) || // 斜向右下
+            CheckDirection(lastMoveX, lastMoveY, 1, -1, player)) { // 斜向右上
+            return true;
+        }
+    }
+    return false;
+}
+
+bool GameManager::CheckDirection(int x, int y, int dx, int dy, int player) {
+    int count = 0;
+    for (int i = -4; i <= 0; ++i) {
+        count = 0;
+        for (int j = 0; j < 5; ++j) {
+            int nx = x + (i + j) * dx;
+            int ny = y + (i + j) * dy;
+            if (nx >= 1 && nx <= board.GetSize() && ny >= 1 && ny <= board.GetSize() && board.GetCell(nx, ny) == player) {
+                count++;
+            } else {
+                break;
+            }
+        }
+        if (count == 5) {
+            return true;
+        }
+    }
     return false;
 }
 
@@ -109,6 +143,7 @@ void GameManager::SaveGame() {
 
     fprintf(file, "%d\n", board.GetSize());
     fprintf(file, "%d\n", moveCount); // 保存当前步数
+    fprintf(file, "%d %d\n", lastMoveX, lastMoveY); // 保存最后一次落子的坐标
     for (int i = 1; i <= board.GetSize(); i++) {
         for (int j = 1; j <= board.GetSize(); j++) {
             fprintf(file, "%d ", board.GetCell(i, j));
@@ -155,6 +190,7 @@ void GameManager::LoadGame() {
 
     board.SetSize(size);
     fscanf(file, "%d", &moveCount); // 读取当前步数
+    fscanf(file, "%d %d", &lastMoveX, &lastMoveY); // 读取最后一次落子的坐标
     for (int i = 1; i <= size; i++) {
         for (int j = 1; j <= size; j++) {
             int value;
