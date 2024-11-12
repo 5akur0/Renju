@@ -11,7 +11,7 @@ public:
     void SaveGame();
     void LoadGame();
     void ClearAllSaves();
-    void ExitGame();
+    void QuitGame();
 
 private:
     Board board;
@@ -19,6 +19,8 @@ private:
     void SetSize();
     void PlayGame();
     bool CheckWin();
+    bool GetPlayerMove(int &x, int &y);
+    void PromptSaveAndQuit(); // 添加这个函数声明
 };
 
 #endif // GAMEMANAGER_H
