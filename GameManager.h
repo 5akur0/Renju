@@ -16,11 +16,13 @@ public:
 private:
     Board board;
     AI ai;
+    int moveCount;
     void SetSize();
     void PlayGame();
     bool CheckWin();
+    bool IsBoardFull();
     bool GetPlayerMove(int &x, int &y);
-    void PromptSaveAndQuit(); // 添加这个函数声明
+    void PromptSaveAndQuit();
 };
 
 #endif // GAMEMANAGER_H

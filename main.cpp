@@ -5,11 +5,10 @@
 
 using namespace std;
 
-int main() {
-    GameManager gameManager;
+void ShowMenu(GameManager &gameManager) {
     string input;
     int choice;
-    do {
+    while (true) {
         cout << "1. 新开始\n";
         cout << "2. 存盘\n";
         cout << "3. 读盘\n";
@@ -45,7 +44,11 @@ int main() {
             default:
                 cout << "无效的选择，请重新输入。\n";
         }
-    } while (true);
+    }
+}
 
+int main() {
+    GameManager gameManager;
+    ShowMenu(gameManager);
     return 0;
 }

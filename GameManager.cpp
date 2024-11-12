@@ -8,20 +8,20 @@
 namespace fs = std::filesystem;
 using namespace std;
 
-GameManager::GameManager() : board(15), ai() {}
+GameManager::GameManager() : board(15), ai(), moveCount(0) {}
 
 void GameManager::NewGame() {
     SetSize();
     board.Initialize();
+    moveCount = 0; // 初始化步数
     board.Print();
     PlayGame();
 }
 
 void GameManager::PlayGame() {
     int x, y;
-    bool playerTurn = true; // true 表示玩家回合，false 表示AI回合
     while (true) {
-        if (playerTurn) {
+        if (moveCount % 2 == 0) { // 玩家回合
             if (!GetPlayerMove(x, y)) {
                 continue;
             }
@@ -30,16 +30,21 @@ void GameManager::PlayGame() {
                 return;
             }
             board.SetCell(x, y, 1); // 玩家使用黑子
-        } else {
+        } else { // AI回合
             ai.MakeMove(board);
         }
+        moveCount++;
         board.Print();
         // 检查胜利条件
         if (CheckWin()) {
-            printf(playerTurn ? "玩家胜利！\n" : "AI胜利！\n");
+            printf((moveCount % 2 == 0) ? "AI胜利！\n" : "玩家胜利！\n");
             break;
         }
-        playerTurn = !playerTurn;
+        // 检查是否平局
+        if (IsBoardFull()) {
+            printf("棋盘已满，平局！\n");
+            break;
+        }
     }
 }
 
@@ -79,6 +84,10 @@ bool GameManager::CheckWin() {
     return false;
 }
 
+bool GameManager::IsBoardFull() {
+    return moveCount >= board.GetSize() * board.GetSize();
+}
+
 void GameManager::SaveGame() {
     char filename[100];
     while (true) {
@@ -99,6 +108,7 @@ void GameManager::SaveGame() {
     }
 
     fprintf(file, "%d\n", board.GetSize());
+    fprintf(file, "%d\n", moveCount); // 保存当前步数
     for (int i = 1; i <= board.GetSize(); i++) {
         for (int j = 1; j <= board.GetSize(); j++) {
             fprintf(file, "%d ", board.GetCell(i, j));
@@ -144,6 +154,7 @@ void GameManager::LoadGame() {
     }
 
     board.SetSize(size);
+    fscanf(file, "%d", &moveCount); // 读取当前步数
     for (int i = 1; i <= size; i++) {
         for (int j = 1; j <= size; j++) {
             int value;
