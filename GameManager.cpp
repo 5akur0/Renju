@@ -1,17 +1,52 @@
 #include "GameManager.h"
+#include "AI.h"
 #include <iostream>
 #include <cstdio>
 #include <filesystem>
+#include <cctype>
 
 namespace fs = std::filesystem;
 using namespace std;
 
-GameManager::GameManager() : board(15) {}
+GameManager::GameManager() : board(15), ai() {}
 
 void GameManager::NewGame() {
     SetSize();
     board.Initialize();
     board.Print();
+    PlayGame();
+}
+
+void GameManager::PlayGame() {
+    int x, y;
+    char col;
+    bool playerTurn = true; // true 表示玩家回合，false 表示AI回合
+    while (true) {
+        if (playerTurn) {
+            printf("请输入你的落子位置（格式：数字字母，例如6a）：");
+            cin >> x >> col;
+            y = board.ToIndex(col);
+            if (x < 1 || x > board.GetSize() || y < 1 || y > board.GetSize() || board.GetCell(x, y) != 0) {
+                printf("无效的位置，请重新输入。\n");
+                continue;
+            }
+            board.SetCell(x, y, 1);
+        } else {
+            ai.MakeMove(board);
+        }
+        board.Print();
+        // 检查胜利条件
+        if (CheckWin()) {
+            printf(playerTurn ? "玩家胜利！\n" : "AI胜利！\n");
+            break;
+        }
+        playerTurn = !playerTurn;
+    }
+}
+
+bool GameManager::CheckWin() {
+    // 实现检查胜利条件的逻辑
+    return false;
 }
 
 void GameManager::SaveGame() {

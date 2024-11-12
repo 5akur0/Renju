@@ -1,6 +1,7 @@
 #include "Board.h"
 #include <iostream>
 #include <cstdio>
+#include <cctype>
 
 using namespace std;
 
@@ -48,14 +49,25 @@ void Board::SetCell(int i, int j, int value) {
     board[i][j] = value;
 }
 
-char Board::ToAlpha(int i) {
-    if (i <= 26) {
+char Board::ToAlpha(int i) const {
+    if (1 <= i && i <= 26) {
         return 'a' + i - 1;
+    } else if (27 <= i && i <= 52) {
+        return 'A' + i - 27;
     }
-    return 'A' + i - 27;
+    return ' '; // invalid
 }
 
-void Board::PrintChar(int i, int j) {
+int Board::ToIndex(char c) const {
+    if (islower(c)) {
+        return c - 'a' + 1;
+    } else if (isupper(c)) {
+        return c - 'A' + 27;
+    }
+    return -1; // invalid
+}
+
+void Board::PrintChar(int i, int j) const {
     if (board[i][j] == 0) {
         if (i == size) {
             if (j == 1) {
