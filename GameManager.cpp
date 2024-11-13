@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <cctype>
 
-namespace fs = std::__fs::filesystem;
+namespace fs = std::filesystem;
 using namespace std;
 
 GameManager::GameManager() : board(15), ai(), moveCount(0), lastMoveX(-1), lastMoveY(-1) {}
@@ -34,8 +34,8 @@ void GameManager::PlayGame() {
             board.SetCell(x, y, 1); // 玩家使用黑子
         } else { // AI回合
             ai.MakeMove(board);
-            x = lastMoveX;
-            y = lastMoveY;
+            x = ai.GetLastMoveX(); // 获取AI最后一次落子的X坐标
+            y = ai.GetLastMoveY(); // 获取AI最后一次落子的Y坐标
         }
         moveCount++; // 更新步数
         lastMoveX = x;
@@ -43,7 +43,7 @@ void GameManager::PlayGame() {
         board.Print();
         // 检查胜利条件
         if (CheckWin()) {
-            printf((moveCount % 2 == 0) ? "AI胜利！\n" : "玩家胜利！\n");
+            printf((moveCount % 2 == 1) ? "玩家胜利！\n" : "AI胜利！\n");
             break;
         }
         // 检查是否平局
