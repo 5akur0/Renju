@@ -2,6 +2,7 @@
 #define AI_H
 
 #include "Board.h"
+#include "AIAlgorithms.h"
 
 class AI
 {

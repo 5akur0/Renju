@@ -1,5 +1,7 @@
 #include "Evaluate.h"
 
+int myEvaluate::tuple6type[4][4][4][4][4][4];
+
 void myEvaluate::init_tuple6type()
 {
     memset(tuple6type, 0, sizeof(tuple6type)); // 全部设为0

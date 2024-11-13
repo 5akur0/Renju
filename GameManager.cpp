@@ -5,7 +5,7 @@
 #include <filesystem>
 #include <cctype>
 
-namespace fs = std::filesystem;
+namespace fs = std::__fs::filesystem;
 using namespace std;
 
 GameManager::GameManager() : board(), ai(), moveCount(0), lastMoveX(-1), lastMoveY(-1) {}

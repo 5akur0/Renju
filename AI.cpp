@@ -1,7 +1,9 @@
 #include "AI.h"
 #include "Board.h"
+#include "AIAlgorithms.h"
 #include <cstdlib>
 #include <ctime>
+#include <utility>
 
 AI::AI() : lastMoveX(-1), lastMoveY(-1)
 {
@@ -10,22 +12,18 @@ AI::AI() : lastMoveX(-1), lastMoveY(-1)
 
 void AI::MakeMove(Board &board)
 {
-    int size = board.GetSize();
-    do
-    {
-        lastMoveX = std::rand() % size + 1;
-        lastMoveY = std::rand() % size + 1;
-    } while (board.GetCell(lastMoveX, lastMoveY) != 0);
+    AIAlgorithms aiAlgorithms;
+    POINTS bestPoints = aiAlgorithms.seekPoints(board.board);
+    lastMoveX = bestPoints.pos[0].first;
+    lastMoveY = bestPoints.pos[0].second;
 
-    board.SetCell(lastMoveX, lastMoveY, 2);
+    board.SetCell(lastMoveX, lastMoveY, C_WHITE);
 }
 
-int AI::GetLastMoveX() const
-{
+int AI::GetLastMoveX() const {
     return lastMoveX;
 }
 
-int AI::GetLastMoveY() const
-{
+int AI::GetLastMoveY() const {
     return lastMoveY;
 }

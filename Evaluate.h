@@ -45,10 +45,10 @@ class myEvaluate
 {
 public:
     static EVALUATION evaluate(int board[16][16]);
-    void init_tuple6type();
+    static void init_tuple6type();
 
 private:
-    int tuple6type[4][4][4][4][4][4]; // 需要初始化
+    static int tuple6type[4][4][4][4][4][4]; // 需要初始化
 };
 
 #endif // EVALUATE_H
