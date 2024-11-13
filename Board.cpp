@@ -7,9 +7,9 @@ using namespace std;
 
 void Board::Initialize()
 {
-    for (int i = 0; i < size + 1; i++)
+    for (int i = 1; i <= 15; i++)
     {
-        for (int j = 0; j < size + 1; j++)
+        for (int j = 1; j <= 15; j++)
         {
             board[i][j] = 0;
         }
@@ -18,32 +18,21 @@ void Board::Initialize()
 
 void Board::Print()
 {
-    for (int i = size; i >= 1; i--)
+    for (int i = 15; i >= 1; i--)
     {
         printf("%2d ", i);
-        for (int j = 1; j <= size; j++)
+        for (int j = 1; j <= 15; j++)
         {
             PrintChar(i, j);
         }
         printf("\n");
     }
     printf("  ");
-    for (int j = 1; j <= size; j++)
+    for (int j = 1; j <= 15; j++)
     {
         printf(" %c", ToAlpha(j));
     }
     printf("\n");
-}
-
-void Board::SetSize(int size)
-{
-    this->size = size;
-    Initialize();
-}
-
-int Board::GetSize() const
-{
-    return size;
 }
 
 int Board::GetCell(int i, int j) const
@@ -86,13 +75,13 @@ void Board::PrintChar(int i, int j) const
 {
     if (board[i][j] == 0)
     {
-        if (i == size)
+        if (i == 15)
         {
             if (j == 1)
             {
                 printf("┌─");
             }
-            else if (j == size)
+            else if (j == 15)
             {
                 printf("┐ ");
             }
@@ -107,7 +96,7 @@ void Board::PrintChar(int i, int j) const
             {
                 printf("└─");
             }
-            else if (j == size)
+            else if (j == 15)
             {
                 printf("┘ ");
             }
@@ -122,7 +111,7 @@ void Board::PrintChar(int i, int j) const
             {
                 printf("├─");
             }
-            else if (j == size)
+            else if (j == 15)
             {
                 printf("┤ ");
             }

@@ -269,24 +269,18 @@ EVALUATION myEvaluate::evaluate(int board[16][16])
     int STAT[17]; // 存在这种棋型的方向的个数
     memset(STAT, 0, sizeof(STAT));
 
-    int A[17][17]; // 包括边界的虚拟大棋盘
+    int A[17][17]; // 包括边界的虚拟大棋盘,board[i][j]=A[i-1][j-1],3表示边界
     for (int i = 0; i < 17; ++i)
-    {
         A[i][0] = 3;
+    for (int i = 0; i < 17; ++i)
         A[i][16] = 3;
-    }
     for (int j = 0; j < 17; ++j)
-    {
         A[0][j] = 3;
+    for (int j = 0; j < 17; ++j)
         A[16][j] = 3;
-    }
     for (int i = 1; i <= 15; ++i)
-    {
         for (int j = 1; j <= 15; ++j)
-        {
             A[i][j] = board[i][j];
-        }
-    }
 
     // 判断横向棋型
     for (i = 1; i <= 15; ++i)
@@ -329,29 +323,29 @@ EVALUATION myEvaluate::evaluate(int board[16][16])
     memset(eval.STAT, 0, sizeof(eval.STAT));
 
     int score = 0;
-    for (i = 1; i < 17; ++i)
+    for (i = 1; i <= 16; ++i)
     {
         score += (stat[0][i] + stat[1][i] + stat[2][i] + stat[3][i]) * weight[i]; // 初步计分
 
         int count = stat[0][i] + stat[1][i] + stat[2][i] + stat[3][i]; // 统计所有方向上部分棋型的个数
-        if (i == 1)
-            eval.STAT[1] = count; // WIN
-        else if (i == 2)
-            eval.STAT[2] = count; // LOSE
-        else if (i == 3)
-            eval.STAT[3] = count; // FLEX4
-        else if (i == 5)
-            eval.STAT[5] = count; // BLOCK4
-        else if (i == 7)
-            eval.STAT[7] = count; // FLEX3
+        if (i == WIN)
+            eval.STAT[WIN] = count; // WIN
+        else if (i == LOSE)
+            eval.STAT[LOSE] = count; // LOSE
+        else if (i == FLEX4)
+            eval.STAT[FLEX4] = count; // FLEX4
+        else if (i == BLOCK4)
+            eval.STAT[BLOCK4] = count; // BLOCK4
+        else if (i == FLEX3)
+            eval.STAT[FLEX3] = count; // FLEX3
     }
     eval.result = R_DRAW;
 
     // 白赢
-    if (eval.STAT[1] > 0)
+    if (eval.STAT[WIN] > 0)
         eval.result = R_WHITE;
     // 黑赢
-    else if (eval.STAT[2] > 0)
+    else if (eval.STAT[LOSE] > 0)
         eval.result = R_BLACK;
 
     eval.score = score;
