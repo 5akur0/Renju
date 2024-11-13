@@ -3,7 +3,8 @@
 
 #include "Board.h"
 
-class AI {
+class AI
+{
 public:
     AI();
     void MakeMove(Board &board);

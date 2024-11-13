@@ -5,10 +5,12 @@
 
 using namespace std;
 
-void ShowMenu(GameManager &gameManager) {
+void ShowMenu(GameManager &gameManager)
+{
     string input;
     int choice;
-    while (true) {
+    while (true)
+    {
         cout << "1. 新开始\n";
         cout << "2. 存盘\n";
         cout << "3. 读盘\n";
@@ -17,37 +19,43 @@ void ShowMenu(GameManager &gameManager) {
         cout << "请输入你的选择: ";
         cin >> input;
 
-        if (input == "q") {
+        if (input == "q")
+        {
             gameManager.QuitGame();
         }
 
-        try {
+        try
+        {
             choice = stoi(input);
-        } catch (invalid_argument &) {
+        }
+        catch (invalid_argument &)
+        {
             cout << "无效的选择，请重新输入。\n";
             continue;
         }
 
-        switch (choice) {
-            case 1:
-                gameManager.NewGame();
-                break;
-            case 2:
-                gameManager.SaveGame();
-                break;
-            case 3:
-                gameManager.LoadGame();
-                break;
-            case 4:
-                gameManager.ClearAllSaves();
-                break;
-            default:
-                cout << "无效的选择，请重新输入。\n";
+        switch (choice)
+        {
+        case 1:
+            gameManager.NewGame();
+            break;
+        case 2:
+            gameManager.SaveGame();
+            break;
+        case 3:
+            gameManager.LoadGame();
+            break;
+        case 4:
+            gameManager.ClearAllSaves();
+            break;
+        default:
+            cout << "无效的选择，请重新输入。\n";
         }
     }
 }
 
-int main() {
+int main()
+{
     GameManager gameManager;
     ShowMenu(gameManager);
     return 0;

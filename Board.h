@@ -1,9 +1,10 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-class Board {
+class Board
+{
 public:
-    Board(int size = 15);
+    int board[16][16];
     void Initialize();
     void Print();
     void SetSize(int size);
@@ -14,7 +15,6 @@ public:
 
 private:
     int size;
-    int board[51][51];
     char ToAlpha(int i) const;
     void PrintChar(int i, int j) const;
 };

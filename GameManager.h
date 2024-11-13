@@ -4,7 +4,8 @@
 #include "Board.h"
 #include "AI.h"
 
-class GameManager {
+class GameManager
+{
 public:
     GameManager();
     void NewGame();
