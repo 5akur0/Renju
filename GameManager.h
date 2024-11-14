@@ -3,6 +3,7 @@
 
 #include "AI.h"
 #include "Board.h"
+#include <string>
 
 class GameManager {
 public:
@@ -16,6 +17,7 @@ public:
 private:
     Board board;
     AI ai;
+    std::string saveFolder;
     int moveCount;
     int lastMoveX;
     int lastMoveY;

@@ -10,11 +10,8 @@
 namespace fs = std::__fs::filesystem;
 using namespace std;
 
-GameManager::GameManager()
-    : board()
-    , ai()
-    , moveCount(0)
-{
+GameManager::GameManager() : board(), ai(), moveCount(0), saveFolder("存档") {
+    fs::create_directory(saveFolder);
 }
 
 void GameManager::NewGame()
@@ -125,8 +122,7 @@ bool GameManager::IsBoardFull()
     return true;
 }
 
-void GameManager::SaveGame()
-{
+void GameManager::SaveGame() {
     char filename[100];
     while (true) {
         printf("请输入要保存的文件名（例如：savegame.txt）：");
@@ -137,7 +133,8 @@ void GameManager::SaveGame()
             printf("文件名必须以 .txt 结尾。\n");
         }
     }
-    FILE* file = fopen(filename, "w");
+    std::string filepath = saveFolder + "/" + filename;
+    FILE *file = fopen(filepath.c_str(), "w");
     if (file == NULL) {
         printf("无法打开文件进行存盘。\n");
         return;
@@ -151,13 +148,12 @@ void GameManager::SaveGame()
         fprintf(file, "\n");
     }
     fclose(file);
-    printf("游戏已保存到文件 %s。\n", filename);
+    printf("游戏已保存到文件 %s。\n", filepath.c_str());
 }
 
-void GameManager::LoadGame()
-{
+void GameManager::LoadGame() {
     char filename[100];
-    FILE* file = nullptr;
+    FILE *file = nullptr;
     while (true) {
         printf("请输入要读取的文件名（例如：savegame.txt），或输入 'q' 退出：");
         scanf("%s", filename);
@@ -166,11 +162,12 @@ void GameManager::LoadGame()
             return;
         }
         if (strlen(filename) > 4 && strcmp(filename + strlen(filename) - 4, ".txt") == 0) {
-            file = fopen(filename, "r");
+            std::string filepath = saveFolder + "/" + filename;
+            file = fopen(filepath.c_str(), "r");
             if (file != NULL) {
                 break;
             } else {
-                printf("无法打开文件 %s 进行读盘。\n", filename);
+                printf("无法打开文件 %s 进行读盘。\n", filepath.c_str());
             }
         } else {
             printf("文件名必须以 .txt 结尾。\n");
@@ -191,7 +188,7 @@ void GameManager::LoadGame()
 
     // 检查游戏是否已经结束
     if (CheckWin()) {
-        printf("游戏已结束，%s 胜利！\n", (moveCount % 2 == 1) ? "玩家" : "AI");
+        printf("游戏已经结束，%s 胜利！\n", (moveCount % 2 == 1) ? "玩家" : "AI");
         return;
     }
     if (IsBoardFull()) {
@@ -202,13 +199,11 @@ void GameManager::LoadGame()
     PlayGame(); // 继续游戏
 }
 
-void GameManager::ClearAllSaves()
-{
-    for (const auto& entry : fs::directory_iterator(".")) {
-        if (entry.path().extension() == ".txt") {
-            fs::remove(entry.path());
-        }
+void GameManager::ClearAllSaves() {
+    for (const auto& entry : fs::directory_iterator(saveFolder)) {
+        fs::remove(entry.path());
     }
+    printf("所有存档文件已删除。\n");
 }
 
 void GameManager::QuitGame()
