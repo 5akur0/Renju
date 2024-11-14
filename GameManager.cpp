@@ -47,6 +47,7 @@ void GameManager::PlayGame()
             lastMoveY = ai.GetLastMoveY();
         }
         moveCount++; // 更新步数
+        board.SetLastMove(lastMoveX, lastMoveY);
         board.Print();
         // 检查胜利条件
         if (CheckWin())

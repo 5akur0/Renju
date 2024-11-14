@@ -2,6 +2,7 @@
 #include <iostream>
 #include <cstdio>
 #include <cctype>
+#include "Evaluate.h"
 
 using namespace std;
 
@@ -123,10 +124,30 @@ void Board::PrintChar(int i, int j) const
     }
     else if (board[i][j] == 1)
     {
-        printf("● ");
+        if (i == lastMoveX && j == lastMoveY)
+        {
+            printf("◉ ");
+        }
+        else
+        {
+            printf("● ");
+        }
     }
     else
     {
-        printf("○ ");
+        if (i == lastMoveX && j == lastMoveY)
+        {
+            printf("◌ ");
+        }
+        else
+        {
+            printf("○ ");
+        }
     }
+}
+
+void Board::SetLastMove(int x, int y)
+{
+    lastMoveX = x;
+    lastMoveY = y;
 }
