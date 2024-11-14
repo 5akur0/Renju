@@ -33,7 +33,7 @@ void AI::MakeMove(Board &board)
     else
     {
         // 无效的落子位置，直接报错
-        std::cerr << "AI 选择了无效的落子位置，运行终止" << std::endl;
+        std::cerr << "AI选择了无效的落子位置，运行终止" << std::endl;
         std::exit(EXIT_FAILURE);
     }
 
