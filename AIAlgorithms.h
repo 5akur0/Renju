@@ -17,13 +17,14 @@ struct DECISION
     int eval;                // 对分数的评估
 };
 
-extern DECISION decision; // analyse得到的最佳落子点
-
 class AIAlgorithms {
 public:
     int AlphaBeta(int board[16][16], int depth, int alpha, int beta);
     POINTS seekPoints(int board[16][16]);
     EVALUATION evaluate(int board[16][16]);
+    DECISION getDecision() const;
+private:
+    DECISION decision;
 };
 
 #endif // AIALGORITHMS_H

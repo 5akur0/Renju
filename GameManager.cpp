@@ -46,8 +46,6 @@ void GameManager::PlayGame()
         else
         { // AI回合
             ai.MakeMove(board);
-            lastMoveX = decision.pos.first;
-            lastMoveY = decision.pos.second;
         }
         moveCount++; // 更新步数
         board.Print();

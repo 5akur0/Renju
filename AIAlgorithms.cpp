@@ -1,7 +1,11 @@
 #include "AIAlgorithms.h"
 #include <bits/stdc++.h>
 
-DECISION decision;
+// 获取决策结果
+DECISION AIAlgorithms::getDecision() const
+{
+    return decision;
+}
 
 // Function to copy the board
 void copyBoard(const int src[16][16], int dest[16][16]) {
