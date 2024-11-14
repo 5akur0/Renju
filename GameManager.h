@@ -4,6 +4,9 @@
 #include "Board.h"
 #include "AI.h"
 
+extern int lastMoveX; // 记录最后一次落子的X坐标
+extern int lastMoveY; // 记录最后一次落子的Y坐标
+
 class GameManager
 {
 public:
@@ -18,9 +21,6 @@ private:
     Board board;
     AI ai;
     int moveCount; // 添加这个成员变量
-    int lastMoveX; // 记录最后一次落子的X坐标
-    int lastMoveY; // 记录最后一次落子的Y坐标
-    void SetSize();
     void PlayGame();
     bool CheckWin();
     bool IsBoardFull(); // 修改这个函数声明

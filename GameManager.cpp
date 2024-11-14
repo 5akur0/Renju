@@ -8,7 +8,10 @@
 namespace fs = std::__fs::filesystem;
 using namespace std;
 
-GameManager::GameManager() : board(), ai(), moveCount(0), lastMoveX(-1), lastMoveY(-1) {}
+int lastMoveX = -1;
+int lastMoveY = -1;
+
+GameManager::GameManager() : board(), ai(), moveCount(0) {}
 
 void GameManager::NewGame()
 {
@@ -37,16 +40,16 @@ void GameManager::PlayGame()
                 return;
             }
             board.SetCell(x, y, C_BLACK); // 玩家使用黑子
+            lastMoveX = x;
+            lastMoveY = y;
         }
         else
         { // AI回合
             ai.MakeMove(board);
-            x = ai.GetLastMoveX(); // 获取AI最后一次落子的X坐标
-            y = ai.GetLastMoveY(); // 获取AI最后一次落子的Y坐标
+            lastMoveX = decision.pos.first;
+            lastMoveY = decision.pos.second;
         }
         moveCount++; // 更新步数
-        lastMoveX = x;
-        lastMoveY = y;
         board.Print();
         // 检查胜利条件
         if (CheckWin())

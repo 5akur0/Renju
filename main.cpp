@@ -56,6 +56,7 @@ void ShowMenu(GameManager &gameManager)
 
 int main()
 {
+    init_tuple6type();
     GameManager gameManager;
     ShowMenu(gameManager);
     return 0;

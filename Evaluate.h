@@ -41,14 +41,8 @@ struct EVALUATION
     int STAT[8]; // 储存部分棋形的个数
 };
 
-class myEvaluate
-{
-public:
-    static EVALUATION evaluate(int board[16][16]);
-    static void init_tuple6type();
+extern int tuple6type[4][4][4][4][4][4]; // 需要初始化
 
-private:
-    static int tuple6type[4][4][4][4][4][4]; // 需要初始化
-};
+void init_tuple6type();
 
 #endif // EVALUATE_H

@@ -5,7 +5,10 @@
 #include <ctime>
 #include <bits/stdc++.h>
 
-AI::AI() : lastMoveX(-1), lastMoveY(-1)
+extern int lastMoveX; // 声明全局变量
+extern int lastMoveY; // 声明全局变量
+
+AI::AI()
 {
     std::srand(std::time(nullptr)); // 初始化随机数种子
 }
@@ -13,27 +16,13 @@ AI::AI() : lastMoveX(-1), lastMoveY(-1)
 void AI::MakeMove(Board &board)
 {
     AIAlgorithms aiAlgorithms;
-    POINTS bestPoints = aiAlgorithms.seekPoints(board.board);
-    //find index of score[10] max
-    int maxIndex = 0;
-    for (int i = 0; i < 10; i++)
-    {
-        if (bestPoints.score[i] >= bestPoints.score[maxIndex])
-        {
-            maxIndex = i;
-        }
-    }
-    std::pair<int, int> pos = bestPoints.pos[maxIndex];
-    lastMoveX = pos.first;
-    lastMoveY = pos.second;
+    // 初始化全局变量 decision
+    decision.eval = INT_MIN;
+    // 调用 AlphaBeta 函数，设置搜索深度为 4
+    aiAlgorithms.AlphaBeta(board.board, 4, INT_MIN, INT_MAX);
+    // 从 decision 中获取最佳落子位置
+    lastMoveX = decision.pos.first;
+    lastMoveY = decision.pos.second;
 
     board.SetCell(lastMoveX, lastMoveY, C_WHITE);
-}
-
-int AI::GetLastMoveX() const {
-    return lastMoveX;
-}
-
-int AI::GetLastMoveY() const {
-    return lastMoveY;
 }
