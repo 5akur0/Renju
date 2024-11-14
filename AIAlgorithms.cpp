@@ -8,23 +8,34 @@ DECISION AIAlgorithms::getDecision() const
 }
 
 // Function to copy the board
-void copyBoard(const int src[16][16], int dest[16][16]) {
-    for (int i = 1; i <= 15; ++i) {
-        for (int j = 1; j <= 15; ++j) {
+void copyBoard(const int src[16][16], int dest[16][16])
+{
+    for (int i = 1; i <= 15; ++i)
+    {
+        for (int j = 1; j <= 15; ++j)
+        {
             dest[i][j] = src[i][j];
         }
     }
 }
 
 // Function to reverse the board
-void reverseBoard(const int src[16][16], int dest[16][16]) {
-    for (int i = 1; i <= 15; ++i) {
-        for (int j = 1; j <= 15; ++j) {
-            if (src[i][j] == C_BLACK) {
+void reverseBoard(const int src[16][16], int dest[16][16])
+{
+    for (int i = 1; i <= 15; ++i)
+    {
+        for (int j = 1; j <= 15; ++j)
+        {
+            if (src[i][j] == C_BLACK)
+            {
                 dest[i][j] = C_WHITE;
-            } else if (src[i][j] == C_WHITE) {
+            }
+            else if (src[i][j] == C_WHITE)
+            {
                 dest[i][j] = C_BLACK;
-            } else {
+            }
+            else
+            {
                 dest[i][j] = C_NONE;
             }
         }
@@ -49,15 +60,13 @@ int AIAlgorithms::AlphaBeta(int board[16][16], int depth, int alpha, int beta)
     }
     else if (depth % 2 == 0)
     { // max层,我方(白)决策
-        int sameBoard[16][16];
-        copyBoard(board, sameBoard);
-        POINTS P = seekPoints(sameBoard);
-
+        POINTS P = seekPoints(board);
         for (int i = 0; i < 10; ++i)
         {
+            int sameBoard[16][16];
+            copyBoard(board, sameBoard);
             sameBoard[P.pos[i].first][P.pos[i].second] = C_WHITE; // 模拟己方落子,不能用board,否则可能改变board的信息
             int a = AlphaBeta(sameBoard, depth - 1, alpha, beta);
-            sameBoard[P.pos[i].first][P.pos[i].second] = C_NONE; // 还原落子
             if (a > alpha)
             {
                 alpha = a;
@@ -78,15 +87,12 @@ int AIAlgorithms::AlphaBeta(int board[16][16], int depth, int alpha, int beta)
         int rBoard[16][16];
         reverseBoard(board, rBoard);
         POINTS P = seekPoints(rBoard); // 找对于黑子的最佳位置,需要将棋盘不同颜色反转,因为seekPoint是求白色方的最佳位置
-
-        int sameBoard[16][16];
-        copyBoard(board, sameBoard);
-
         for (int i = 0; i < 10; ++i)
         {
+            int sameBoard[16][16];
+            copyBoard(board, sameBoard);
             sameBoard[P.pos[i].first][P.pos[i].second] = C_BLACK; // 模拟敌方落子
             int a = AlphaBeta(sameBoard, depth - 1, alpha, beta);
-            sameBoard[P.pos[i].first][P.pos[i].second] = C_NONE; // 还原落子
             if (a < beta)
                 beta = a;
             if (beta <= alpha)
@@ -102,7 +108,7 @@ POINTS AIAlgorithms::seekPoints(int board[16][16])
     int worth[16][16];
     POINTS best_points;
 
-    memset(B, false, sizeof(B));
+    memset(B, 0, sizeof(B));
     for (int i = 1; i <= 15; ++i)
     { // 每个非空点附近8个方向延伸3个深度,若不越界则标记为可走
         for (int j = 1; j <= 15; ++j)
@@ -156,7 +162,9 @@ POINTS AIAlgorithms::seekPoints(int board[16][16])
                 }
             }
         }
-        best_points.score[k] = w;
+        board[best_points.pos[k].first][best_points.pos[k].second] = C_WHITE;
+        best_points.score[k] = evaluate(board).score;
+        board[best_points.pos[k].first][best_points.pos[k].second] = C_NONE;
         worth[best_points.pos[k].first][best_points.pos[k].second] = -INT_MAX; // 清除掉上一点,计算下一点的位置和分数
     }
     return best_points;
