@@ -8,9 +8,6 @@
 namespace fs = std::__fs::filesystem;
 using namespace std;
 
-int lastMoveX = -1;
-int lastMoveY = -1;
-
 GameManager::GameManager() : board(), ai(), moveCount(0) {}
 
 void GameManager::NewGame()
@@ -46,6 +43,8 @@ void GameManager::PlayGame()
         else
         { // AI回合
             ai.MakeMove(board);
+            lastMoveX = ai.GetLastMoveX();
+            lastMoveY = ai.GetLastMoveY();
         }
         moveCount++; // 更新步数
         board.Print();

@@ -139,7 +139,7 @@ POINTS AIAlgorithms::seekPoints(int board[16][16])
             worth[i][j] = INT_MIN;
             if (board[i][j] == C_NONE && B[i][j] == true)
             {
-                board[i][j] = C_BLACK;
+                board[i][j] = C_WHITE;
                 worth[i][j] = evaluate(board).score;
                 board[i][j] = C_NONE;
             }
@@ -182,7 +182,7 @@ EVALUATION AIAlgorithms::evaluate(int board[16][16])
     int STAT[17]; // 存在这种棋型的方向的个数
     memset(STAT, 0, sizeof(STAT));
 
-    int A[17][17]; // 包括边界的虚拟大棋盘,board[i][j]=A[i-1][j-1],3表示边界
+    int A[17][17]; // 包括边界的虚拟大棋盘,3表示边界
     for (int i = 0; i < 17; ++i)
         A[i][0] = 3;
     for (int i = 0; i < 17; ++i)

@@ -5,10 +5,7 @@
 #include <ctime>
 #include <bits/stdc++.h>
 
-extern int lastMoveX; // 声明全局变量
-extern int lastMoveY; // 声明全局变量
-
-AI::AI()
+AI::AI() : lastMoveX(-1), lastMoveY(-1)
 {
     std::srand(std::time(nullptr)); // 初始化随机数种子
 }
@@ -22,6 +19,24 @@ void AI::MakeMove(Board &board)
     // 从 decision 中获取最佳落子位置
     lastMoveX = decision.pos.first;
     lastMoveY = decision.pos.second;
-
+    if (board.GetCell(lastMoveX, lastMoveY) == C_NONE)
+    {
+        board.SetCell(lastMoveX, lastMoveY, C_WHITE);
+    }
+    else
+    {
+        // 处理无效的落子位置，可能需要重新计算或报错
+        std::cerr << "AI 选择了无效的落子位置！" << std::endl;
+    }
     board.SetCell(lastMoveX, lastMoveY, C_WHITE);
+}
+
+int AI::GetLastMoveX() const
+{
+    return lastMoveX;
+}
+
+int AI::GetLastMoveY() const
+{
+    return lastMoveY;
 }
