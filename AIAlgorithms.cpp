@@ -70,8 +70,8 @@ int AIAlgorithms::AlphaBeta(int board[16][16], int depth, int alpha, int beta)
             if (a > alpha)
             {
                 alpha = a;
-                if (depth == 6)
-                { // 4是自己设立的深度(可以改为6,8,但必须为偶数),用来找最佳落子
+                if (depth == DEPTH)
+                {
                     decision.pos.first = P.pos[i].first;
                     decision.pos.second = P.pos[i].second;
                     decision.eval = a;

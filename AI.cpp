@@ -14,7 +14,7 @@ void AI::MakeMove(Board &board)
 {
     AIAlgorithms aiAlgorithms;
     // 调用 AlphaBeta 函数，设置搜索深度为 4
-    aiAlgorithms.AlphaBeta(board.board, 6, INT_MIN, INT_MAX);
+    aiAlgorithms.AlphaBeta(board.board, DEPTH, INT_MIN, INT_MAX);
     DECISION decision = aiAlgorithms.getDecision();
     // 从 decision 中获取最佳落子位置
     lastMoveX = decision.pos.first;

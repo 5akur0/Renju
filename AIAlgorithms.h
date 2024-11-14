@@ -5,6 +5,8 @@
 #include "Evaluate.h"
 #include "utility"
 
+const int DEPTH = 6; // 搜索深度
+
 struct POINTS
 { // 最佳落子位置,[0]分数最高,[9]分数最低
     std::pair<int, int> pos[10];
