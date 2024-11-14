@@ -1,5 +1,36 @@
 #include "AIAlgorithms.h"
-#include <bits/stdc++.h>
+#include <random>
+
+AIAlgorithms::AIAlgorithms() noexcept {
+    initZobristTable();
+    currentHash = 0;
+}
+
+void AIAlgorithms::initZobristTable() {
+    std::mt19937_64 rng(std::random_device{}());
+    std::uniform_int_distribution<unsigned long long> dist;
+
+    for (int i = 0; i < 16; ++i) {
+        for (int j = 0; j < 16; ++j) {
+            for (int k = 0; k < 3; ++k) {
+                zobristTable[i][j][k] = dist(rng);
+            }
+        }
+    }
+}
+
+unsigned long long AIAlgorithms::computeHash(int board[16][16]) const {
+    unsigned long long hash = 0;
+    for (int i = 1; i <= 15; ++i) {
+        for (int j = 1; j <= 15; ++j) {
+            if (board[i][j] != C_NONE) {
+                int piece = (board[i][j] == C_BLACK) ? 1 : 2;
+                hash ^= zobristTable[i][j][piece];
+            }
+        }
+    }
+    return hash;
+}
 
 // 获取决策结果
 DECISION AIAlgorithms::getDecision() const
@@ -33,23 +64,31 @@ void reverseBoard(const int src[16][16], int dest[16][16])
     }
 }
 
-int AIAlgorithms::AlphaBeta(int board[16][16], int depth, int alpha, int beta)
-{
+#include <unordered_map>
+
+std::unordered_map<unsigned long long, int> transpositionTable;
+
+int AIAlgorithms::AlphaBeta(int board[16][16], int depth, int alpha, int beta) {
+    unsigned long long hash = computeHash(board);
+    if (transpositionTable.find(hash) != transpositionTable.end()) {
+        return transpositionTable[hash];
+    }
+
     gameResult RESULT = evaluate(board).result;
-    if (depth == 0 || RESULT != R_DRAW) { // 如果模拟落子可以分出输赢，那么直接返回结果，不需要再搜索
+    if (depth == 0 || RESULT != R_DRAW) {
         if (depth == 0) {
             POINTS P;
-            P = seekPoints(board); // 生成最佳的可能落子位置
-            return P.score[0]; // 返回最佳位置对应的最高分
+            P = seekPoints(board);
+            return P.score[0];
         } else {
             return evaluate(board).score;
         }
-    } else if (depth % 2 == 0) { // max层,我方(白)决策
+    } else if (depth % 2 == 0) {
         POINTS P = seekPoints(board);
         for (int i = 0; i < NUM; ++i) {
             int sameBoard[16][16];
             copyBoard(board, sameBoard);
-            sameBoard[P.pos[i].first][P.pos[i].second] = C_WHITE; // 模拟己方落子,不能用board,否则可能改变board的信息
+            sameBoard[P.pos[i].first][P.pos[i].second] = C_WHITE;
             int a = AlphaBeta(sameBoard, depth - 1, alpha, beta);
             if (a > alpha) {
                 alpha = a;
@@ -60,23 +99,23 @@ int AIAlgorithms::AlphaBeta(int board[16][16], int depth, int alpha, int beta)
                 }
             }
             if (beta <= alpha)
-                break; // 剪枝
+                break;
         }
+        transpositionTable[hash] = alpha;
         return alpha;
-    } else { // min层,敌方(黑)决策
-        int rBoard[16][16];
-        reverseBoard(board, rBoard);
-        POINTS P = seekPoints(rBoard); // 找对于黑子的最佳位置,需要将棋盘不同颜色反转,因为seekPoint是求白色方的最佳位置
+    } else {
+        POINTS P = seekPoints(board);
         for (int i = 0; i < NUM; ++i) {
             int sameBoard[16][16];
             copyBoard(board, sameBoard);
-            sameBoard[P.pos[i].first][P.pos[i].second] = C_BLACK; // 模拟敌方落子
+            sameBoard[P.pos[i].first][P.pos[i].second] = C_BLACK;
             int a = AlphaBeta(sameBoard, depth - 1, alpha, beta);
             if (a < beta)
                 beta = a;
             if (beta <= alpha)
-                break; // 剪枝
+                break;
         }
+        transpositionTable[hash] = beta;
         return beta;
     }
 }

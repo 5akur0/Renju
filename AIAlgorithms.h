@@ -5,7 +5,7 @@
 #include "Evaluate.h"
 #include "utility"
 
-const int DEPTH = 4; // 搜索深度
+const int DEPTH = 6; // 搜索深度
 const int NUM = 10; // 搜索数量
 
 struct POINTS { // 最佳落子位置,[0]分数最高,[9]分数最低
@@ -20,6 +20,7 @@ struct DECISION {
 
 class AIAlgorithms {
 public:
+    AIAlgorithms() noexcept;
     int AlphaBeta(int board[16][16], int depth, int alpha, int beta);
     POINTS seekPoints(int board[16][16]);
     EVALUATION evaluate(int board[16][16]);
@@ -27,6 +28,10 @@ public:
 
 private:
     DECISION decision;
+    unsigned long long zobristTable[16][16][3]; // Zobrist 哈希表
+    unsigned long long computeHash(int board[16][16]) const;
+    void initZobristTable();
+    unsigned long long currentHash; // 当前棋盘状态的哈希值
 };
 
 #endif // AIALGORITHMS_H
