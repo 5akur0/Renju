@@ -23,7 +23,7 @@ void Board::Initialize()
 void Board::SetAIFirst()
 {
     isAIFirst = true;
-    board[8][8] = 1;
+    board[8][8] = 2;
     lastMoveX = 8;
     lastMoveY = 8;
 }

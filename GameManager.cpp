@@ -28,7 +28,8 @@ void GameManager::NewGame()
         else if (choice == 'n' || choice == 'N')
         {
             board.SetAIFirst();
-            moveCount = 1;
+            lastMoveX = 8;
+            lastMoveY = 8;
             break;
         }
         else
