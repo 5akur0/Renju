@@ -1,16 +1,16 @@
 #ifndef AI_H
 #define AI_H
 
-#include "Board.h"
 #include "AIAlgorithms.h"
+#include "Board.h"
 
-class AI
-{
+class AI {
 public:
     AI();
-    void MakeMove(Board &board);
+    void MakeMove(Board& board);
     int GetLastMoveX() const;
     int GetLastMoveY() const;
+
 private:
     int lastMoveX;
     int lastMoveY;

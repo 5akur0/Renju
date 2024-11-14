@@ -1,14 +1,21 @@
 #include "GameManager.h"
-#include "AI.h"
-#include <iostream>
+
+#include <cctype>
 #include <cstdio>
 #include <filesystem>
-#include <cctype>
+#include <iostream>
+
+#include "AI.h"
 
 namespace fs = std::__fs::filesystem;
 using namespace std;
 
-GameManager::GameManager() : board(), ai(), moveCount(0) {}
+GameManager::GameManager()
+    : board()
+    , ai()
+    , moveCount(0)
+{
+}
 
 void GameManager::NewGame()
 {
@@ -17,23 +24,17 @@ void GameManager::NewGame()
     lastMoveX = -1;
     lastMoveY = -1;
     char choice;
-    while (true)
-    {
+    while (true) {
         cout << "你想要先手吗？(y/n): ";
         cin >> choice;
-        if (choice == 'y' || choice == 'Y')
-        {
+        if (choice == 'y' || choice == 'Y') {
             break;
-        }
-        else if (choice == 'n' || choice == 'N')
-        {
+        } else if (choice == 'n' || choice == 'N') {
             board.SetAIFirst();
             lastMoveX = 8;
             lastMoveY = 8;
             break;
-        }
-        else
-        {
+        } else {
             cout << "无效的选择，请输入 'y' 或 'n'。" << endl;
         }
     }
@@ -44,25 +45,19 @@ void GameManager::NewGame()
 void GameManager::PlayGame()
 {
     int x, y;
-    while (true)
-    {
-        if (moveCount % 2 == 0)
-        { // 玩家回合
-            if (!GetPlayerMove(x, y))
-            {
+    while (true) {
+        if (moveCount % 2 == 0) { // 玩家回合
+            if (!GetPlayerMove(x, y)) {
                 continue;
             }
-            if (x == -1 && y == -1)
-            {
+            if (x == -1 && y == -1) {
                 PromptSaveAndQuit();
                 return;
             }
             board.SetCell(x, y, C_BLACK); // 玩家使用黑子
             lastMoveX = x;
             lastMoveY = y;
-        }
-        else
-        { // AI回合
+        } else { // AI回合
             ai.MakeMove(board);
             lastMoveX = ai.GetLastMoveX();
             lastMoveY = ai.GetLastMoveY();
@@ -71,21 +66,20 @@ void GameManager::PlayGame()
         board.SetLastMove(lastMoveX, lastMoveY);
         board.Print();
         // 检查胜利条件
-        if (CheckWin())
-        {
+        if (CheckWin()) {
             printf((moveCount % 2 == 1) ? "玩家胜利！\n" : "AI胜利！\n");
             break;
         }
         // 检查是否平局
-        if (IsBoardFull())
-        {
+        if (IsBoardFull()) {
             printf("棋盘已满，平局！\n");
             break;
         }
     }
 }
 
-bool GameManager::GetPlayerMove(int &x, int &y) {
+bool GameManager::GetPlayerMove(int& x, int& y)
+{
     printf("请输入你的落子位置（格式：数字字母，例如6a，输入q退出）：");
     string input;
     cin >> input;
@@ -119,7 +113,8 @@ bool GameManager::GetPlayerMove(int &x, int &y) {
     return true;
 }
 
-bool GameManager::IsBoardFull() {
+bool GameManager::IsBoardFull()
+{
     for (int i = 1; i <= 15; ++i) {
         for (int j = 1; j <= 15; ++j) {
             if (board.GetCell(i, j) == C_NONE) {
@@ -130,7 +125,8 @@ bool GameManager::IsBoardFull() {
     return true;
 }
 
-void GameManager::SaveGame() {
+void GameManager::SaveGame()
+{
     char filename[100];
     while (true) {
         printf("请输入要保存的文件名（例如：savegame.txt）：");
@@ -141,7 +137,7 @@ void GameManager::SaveGame() {
             printf("文件名必须以 .txt 结尾。\n");
         }
     }
-    FILE *file = fopen(filename, "w");
+    FILE* file = fopen(filename, "w");
     if (file == NULL) {
         printf("无法打开文件进行存盘。\n");
         return;
@@ -158,9 +154,10 @@ void GameManager::SaveGame() {
     printf("游戏已保存到文件 %s。\n", filename);
 }
 
-void GameManager::LoadGame() {
+void GameManager::LoadGame()
+{
     char filename[100];
-    FILE *file = nullptr;
+    FILE* file = nullptr;
     while (true) {
         printf("请输入要读取的文件名（例如：savegame.txt），或输入 'q' 退出：");
         scanf("%s", filename);
@@ -192,7 +189,7 @@ void GameManager::LoadGame() {
     printf("游戏已从文件 %s 读入。\n", filename);
     board.Print();
 
-     // 检查游戏是否已经结束
+    // 检查游戏是否已经结束
     if (CheckWin()) {
         printf("游戏已结束，%s 胜利！\n", (moveCount % 2 == 1) ? "玩家" : "AI");
         return;
@@ -205,20 +202,23 @@ void GameManager::LoadGame() {
     PlayGame(); // 继续游戏
 }
 
-void GameManager::ClearAllSaves() {
-    for (const auto &entry : fs::directory_iterator(".")) {
+void GameManager::ClearAllSaves()
+{
+    for (const auto& entry : fs::directory_iterator(".")) {
         if (entry.path().extension() == ".txt") {
             fs::remove(entry.path());
         }
     }
 }
 
-void GameManager::QuitGame() {
+void GameManager::QuitGame()
+{
     printf("程序退出。\n");
     exit(0);
 }
 
-void GameManager::PromptSaveAndQuit() {
+void GameManager::PromptSaveAndQuit()
+{
     char choice;
     printf("是否保存游戏进度？(y/n)：");
     cin >> choice;
@@ -228,7 +228,8 @@ void GameManager::PromptSaveAndQuit() {
     QuitGame();
 }
 
-bool GameManager::CheckWin() {
+bool GameManager::CheckWin()
+{
     int player = board.GetCell(lastMoveX, lastMoveY);
     if (player != 0) {
         if (CheckDirection(lastMoveX, lastMoveY, 1, 0, player) || // 水平方向
@@ -241,7 +242,8 @@ bool GameManager::CheckWin() {
     return false;
 }
 
-bool GameManager::CheckDirection(int x, int y, int dx, int dy, int player) {
+bool GameManager::CheckDirection(int x, int y, int dx, int dy, int player)
+{
     int count = 1;
     for (int i = 1; i < 5; ++i) {
         int nx = x + i * dx;

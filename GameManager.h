@@ -1,11 +1,10 @@
 #ifndef GAMEMANAGER_H
 #define GAMEMANAGER_H
 
-#include "Board.h"
 #include "AI.h"
+#include "Board.h"
 
-class GameManager
-{
+class GameManager {
 public:
     GameManager();
     void NewGame();
@@ -23,9 +22,10 @@ private:
     void PlayGame();
     bool CheckWin();
     bool IsBoardFull();
-    bool GetPlayerMove(int &x, int &y);
+    bool GetPlayerMove(int& x, int& y);
     void PromptSaveAndQuit();
-    bool CheckDirection(int x, int y, int dx, int dy, int player); // 添加这个函数声明
+    bool CheckDirection(int x, int y, int dx, int dy,
+        int player); // 添加这个函数声明
 };
 
 #endif // GAMEMANAGER_H

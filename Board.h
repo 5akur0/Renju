@@ -1,9 +1,7 @@
 #ifndef BOARD_H
 #define BOARD_H
 
-
-class Board
-{
+class Board {
 public:
     int board[16][16];
     void Initialize();

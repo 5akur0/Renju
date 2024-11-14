@@ -6,18 +6,16 @@
 #include "utility"
 
 const int DEPTH = 4; // 搜索深度
-const int NUM = 10;  // 搜索数量
+const int NUM = 10; // 搜索数量
 
-struct POINTS
-{ // 最佳落子位置,[0]分数最高,[9]分数最低
+struct POINTS { // 最佳落子位置,[0]分数最高,[9]分数最低
     std::pair<int, int> pos[NUM];
     int score[NUM]; // 此处落子的局势分数
 };
 
-struct DECISION
-{
+struct DECISION {
     std::pair<int, int> pos; // 位置
-    int eval;                // 对分数的评估
+    int eval; // 对分数的评估
 };
 
 class AIAlgorithms {
@@ -26,6 +24,7 @@ public:
     POINTS seekPoints(int board[16][16]);
     EVALUATION evaluate(int board[16][16]);
     DECISION getDecision() const;
+
 private:
     DECISION decision;
 };
