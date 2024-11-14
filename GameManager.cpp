@@ -169,6 +169,7 @@ void GameManager::LoadGame() {
     fclose(file);
     printf("游戏已从文件 %s 读入。\n", filename);
     board.Print();
+    PlayGame(); // 继续游戏
 }
 
 void GameManager::ClearAllSaves() {
