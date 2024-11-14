@@ -16,6 +16,26 @@ void GameManager::NewGame()
     moveCount = 0; // 初始化步数
     lastMoveX = -1;
     lastMoveY = -1;
+    char choice;
+    while (true)
+    {
+        cout << "你想要先手吗？(y/n): ";
+        cin >> choice;
+        if (choice == 'y' || choice == 'Y')
+        {
+            break;
+        }
+        else if (choice == 'n' || choice == 'N')
+        {
+            board.SetAIFirst();
+            moveCount = 1;
+            break;
+        }
+        else
+        {
+            cout << "无效的选择，请输入 'y' 或 'n'。" << endl;
+        }
+    }
     board.Print();
     PlayGame();
 }

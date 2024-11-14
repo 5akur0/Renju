@@ -40,6 +40,10 @@ void AI::MakeMove(Board &board)
     // 结束计时，输出时间
     auto end = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(end - start);
+    if (duration.count() < 1000)
+    {
+        std::this_thread::sleep_for(milliseconds(1000) - duration);
+    }
     std::cout << "AI思考时间: " << duration.count() << "毫秒" << std::endl;
 }
 

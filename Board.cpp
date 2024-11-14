@@ -15,6 +15,17 @@ void Board::Initialize()
             board[i][j] = 0;
         }
     }
+    lastMoveX = -1;
+    lastMoveY = -1;
+    isAIFirst = false;
+}
+
+void Board::SetAIFirst()
+{
+    isAIFirst = true;
+    board[8][8] = 1;
+    lastMoveX = 8;
+    lastMoveY = 8;
 }
 
 void Board::Print()
@@ -126,22 +137,50 @@ void Board::PrintChar(int i, int j) const
     {
         if (i == lastMoveX && j == lastMoveY)
         {
-            printf("◉ ");
+            if (isAIFirst)
+            {
+                printf("◌ ");
+            }
+            else
+            {
+                printf("◉ ");
+            }
         }
         else
         {
-            printf("● ");
+            if (isAIFirst)
+            {
+                printf("○ ");
+            }
+            else
+            {
+                printf("● ");
+            }
         }
     }
     else
     {
         if (i == lastMoveX && j == lastMoveY)
         {
-            printf("◌ ");
+            if (isAIFirst)
+            {
+                printf("◉ ");
+            }
+            else
+            {
+                printf("◌ ");
+            }
         }
         else
         {
-            printf("○ ");
+            if (isAIFirst)
+            {
+                printf("● ");
+            }
+            else
+            {
+                printf("○ ");
+            }
         }
     }
 }
