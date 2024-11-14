@@ -61,7 +61,7 @@ int AIAlgorithms::AlphaBeta(int board[16][16], int depth, int alpha, int beta)
     else if (depth % 2 == 0)
     { // max层,我方(白)决策
         POINTS P = seekPoints(board);
-        for (int i = 0; i < 10; ++i)
+        for (int i = 0; i < NUM; ++i)
         {
             int sameBoard[16][16];
             copyBoard(board, sameBoard);
@@ -87,7 +87,7 @@ int AIAlgorithms::AlphaBeta(int board[16][16], int depth, int alpha, int beta)
         int rBoard[16][16];
         reverseBoard(board, rBoard);
         POINTS P = seekPoints(rBoard); // 找对于黑子的最佳位置,需要将棋盘不同颜色反转,因为seekPoint是求白色方的最佳位置
-        for (int i = 0; i < 10; ++i)
+        for (int i = 0; i < NUM; ++i)
         {
             int sameBoard[16][16];
             copyBoard(board, sameBoard);
@@ -147,7 +147,7 @@ POINTS AIAlgorithms::seekPoints(int board[16][16])
     }
 
     int w;
-    for (int k = 0; k < 10; ++k)
+    for (int k = 0; k < NUM; ++k)
     {
         w = -INT_MAX;
         for (int i = 1; i <= 15; ++i)

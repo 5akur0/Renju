@@ -6,11 +6,12 @@
 #include "utility"
 
 const int DEPTH = 6; // 搜索深度
+const int NUM = 20;  // 搜索数量
 
 struct POINTS
 { // 最佳落子位置,[0]分数最高,[9]分数最低
-    std::pair<int, int> pos[10];
-    int score[10]; // 此处落子的局势分数
+    std::pair<int, int> pos[NUM];
+    int score[NUM]; // 此处落子的局势分数
 };
 
 struct DECISION
