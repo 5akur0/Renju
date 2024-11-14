@@ -169,6 +169,17 @@ void GameManager::LoadGame() {
     fclose(file);
     printf("游戏已从文件 %s 读入。\n", filename);
     board.Print();
+
+     // 检查游戏是否已经结束
+    if (CheckWin()) {
+        printf("游戏已结束，%s 胜利！\n", (moveCount % 2 == 1) ? "玩家" : "AI");
+        return;
+    }
+    if (IsBoardFull()) {
+        printf("棋盘已满，平局！\n");
+        return;
+    }
+
     PlayGame(); // 继续游戏
 }
 
