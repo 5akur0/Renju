@@ -39,13 +39,13 @@ int AIAlgorithms::AlphaBeta(int board[16][16], int depth, int alpha, int beta)
     if (depth == 0 || RESULT != R_DRAW) { // 如果模拟落子可以分出输赢，那么直接返回结果，不需要再搜索
         if (depth == 0) {
             POINTS P;
-            P = seekPoints(board); // 生成最佳的可能落子位置
+            P = seekPoints(board, C_WHITE); // 生成最佳的可能落子位置
             return P.score[0]; // 返回最佳位置对应的最高分
         } else {
             return evaluate(board).score;
         }
     } else if (depth % 2 == 0) { // max层,我方(白)决策
-        POINTS P = seekPoints(board);
+        POINTS P = seekPoints(board, C_WHITE);
         for (int i = 0; i < NUM; ++i) {
             int sameBoard[16][16];
             copyBoard(board, sameBoard);
@@ -66,7 +66,7 @@ int AIAlgorithms::AlphaBeta(int board[16][16], int depth, int alpha, int beta)
     } else { // min层,敌方(黑)决策
         int rBoard[16][16];
         reverseBoard(board, rBoard);
-        POINTS P = seekPoints(rBoard); // 找对于黑子的最佳位置,需要将棋盘不同颜色反转,因为seekPoint是求白色方的最佳位置
+        POINTS P = seekPoints(rBoard, C_BLACK); // 找对于黑子的最佳位置,需要将棋盘不同颜色反转,因为seekPoint是求白色方的最佳位置
         for (int i = 0; i < NUM; ++i) {
             int sameBoard[16][16];
             copyBoard(board, sameBoard);
@@ -81,7 +81,7 @@ int AIAlgorithms::AlphaBeta(int board[16][16], int depth, int alpha, int beta)
     }
 }
 
-POINTS AIAlgorithms::seekPoints(int board[16][16])
+POINTS AIAlgorithms::seekPoints(int board[16][16], int player)
 {
     bool B[16][16]; // 局部搜索标记数组
     int worth[16][16];
@@ -110,6 +110,9 @@ POINTS AIAlgorithms::seekPoints(int board[16][16])
         for (int j = 1; j <= 15; ++j) {
             worth[i][j] = INT_MIN;
             if (board[i][j] == C_NONE && B[i][j] == true) {
+                if (player == C_BLACK && isForbiddenMove(board, i, j)) {
+                    continue;
+                }
                 board[i][j] = C_WHITE;
                 worth[i][j] = evaluate(board).score;
                 board[i][j] = C_NONE;
