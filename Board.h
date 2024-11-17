@@ -10,7 +10,6 @@ public:
     void SetCell(int i, int j, int value);
     int ToIndex(char c) const; // 添加这个函数声明
     void SetLastMove(int x, int y);
-    void SetAIFirst();
 
 private:
     int size;
@@ -18,7 +17,6 @@ private:
     void PrintChar(int i, int j) const;
     int lastMoveX;
     int lastMoveY;
-    bool isAIFirst;
 };
 
 #endif // BOARD_H

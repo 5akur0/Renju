@@ -21,9 +21,9 @@ struct DECISION {
 
 class AIAlgorithms {
 public:
-    int AlphaBeta(int board[16][16], int depth, int alpha, int beta);
+    int AlphaBeta(int board[16][16], int depth, int alpha, int beta, int player);
     POINTS seekPoints(int board[16][16], int player);
-    EVALUATION evaluate(int board[16][16]);
+    EVALUATION evaluate(int board[16][16], int player);
     DECISION getDecision() const;
 
 private:

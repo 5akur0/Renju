@@ -25,11 +25,13 @@ void GameManager::NewGame()
         cout << "你想要先手吗？(y/n): ";
         cin >> choice;
         if (choice == 'y' || choice == 'Y') {
+            PlayerColor = C_BLACK;
+            AIColor = C_WHITE;
             break;
         } else if (choice == 'n' || choice == 'N') {
-            board.SetAIFirst();
-            lastMoveX = 8;
-            lastMoveY = 8;
+            PlayerColor = C_WHITE;
+            AIColor = C_BLACK;
+            moveCount = 1; // AI先手
             break;
         } else {
             cout << "无效的选择，请输入 'y' 或 'n'。" << endl;
@@ -51,11 +53,11 @@ void GameManager::PlayGame()
                 PromptSaveAndQuit();
                 return;
             }
-            board.SetCell(x, y, C_BLACK); // 玩家使用黑子
+            board.SetCell(x, y, PlayerColor);
             lastMoveX = x;
             lastMoveY = y;
         } else { // AI回合
-            ai.MakeMove(board);
+            ai.MakeMove(board, AIColor);
             lastMoveX = ai.GetLastMoveX();
             lastMoveY = ai.GetLastMoveY();
         }
@@ -64,7 +66,11 @@ void GameManager::PlayGame()
         board.Print();
         // 检查胜利条件
         if (CheckWin()) {
-            printf((moveCount % 2 == 1) ? "玩家胜利！\n" : "AI胜利！\n");
+            if (moveCount % 2 == 1) {
+                printf("游戏结束，玩家胜利！\n");
+            } else {
+                printf("游戏结束，AI胜利！\n");
+            }
             break;
         }
         // 检查是否平局

@@ -33,24 +33,24 @@ void reverseBoard(const int src[16][16], int dest[16][16])
     }
 }
 
-int AIAlgorithms::AlphaBeta(int board[16][16], int depth, int alpha, int beta)
+int AIAlgorithms::AlphaBeta(int board[16][16], int depth, int alpha, int beta, int player)
 {
-    gameResult RESULT = evaluate(board).result;
+    gameResult RESULT = evaluate(board, player).result;
     if (depth == 0 || RESULT != R_DRAW) { // 如果模拟落子可以分出输赢，那么直接返回结果，不需要再搜索
         if (depth == 0) {
             POINTS P;
-            P = seekPoints(board, C_WHITE); // 生成最佳的可能落子位置
+            P = seekPoints(board, player); // 生成最佳的可能落子位置
             return P.score[0]; // 返回最佳位置对应的最高分
         } else {
-            return evaluate(board).score;
+            return evaluate(board, player).score;
         }
-    } else if (depth % 2 == 0) { // max层,我方(白)决策
-        POINTS P = seekPoints(board, C_WHITE);
+    } else if (depth % 2 == 0) { // max层
+        POINTS P = seekPoints(board, player);
         for (int i = 0; i < NUM; ++i) {
             int sameBoard[16][16];
             copyBoard(board, sameBoard);
-            sameBoard[P.pos[i].first][P.pos[i].second] = C_WHITE; // 模拟己方落子,不能用board,否则可能改变board的信息
-            int a = AlphaBeta(sameBoard, depth - 1, alpha, beta);
+            sameBoard[P.pos[i].first][P.pos[i].second] = player; // 模拟己方落子,不能用board,否则可能改变board的信息
+            int a = AlphaBeta(sameBoard, depth - 1, alpha, beta, 3 - player);
             if (a > alpha) {
                 alpha = a;
                 if (depth == DEPTH) {
@@ -66,12 +66,12 @@ int AIAlgorithms::AlphaBeta(int board[16][16], int depth, int alpha, int beta)
     } else { // min层,敌方(黑)决策
         int rBoard[16][16];
         reverseBoard(board, rBoard);
-        POINTS P = seekPoints(rBoard, C_BLACK); // 找对于黑子的最佳位置,需要将棋盘不同颜色反转,因为seekPoint是求白色方的最佳位置
+        POINTS P = seekPoints(rBoard, 3 - player); // 找对于敌方的最佳位置,需要将棋盘不同颜色反转,因为seekPoint是求白色方的最佳位置
         for (int i = 0; i < NUM; ++i) {
             int sameBoard[16][16];
             copyBoard(board, sameBoard);
-            sameBoard[P.pos[i].first][P.pos[i].second] = C_BLACK; // 模拟敌方落子
-            int a = AlphaBeta(sameBoard, depth - 1, alpha, beta);
+            sameBoard[P.pos[i].first][P.pos[i].second] = 3 - player; // 模拟敌方落子
+            int a = AlphaBeta(sameBoard, depth - 1, alpha, beta, player);
             if (a < beta)
                 beta = a;
             if (beta <= alpha)
@@ -113,8 +113,8 @@ POINTS AIAlgorithms::seekPoints(int board[16][16], int player)
                 if (player == C_BLACK && isForbiddenMove(board, i, j)) {
                     continue;
                 }
-                board[i][j] = C_WHITE;
-                worth[i][j] = evaluate(board).score;
+                board[i][j] = player;
+                worth[i][j] = evaluate(board, player).score;
                 board[i][j] = C_NONE;
             }
         }
@@ -132,16 +132,21 @@ POINTS AIAlgorithms::seekPoints(int board[16][16], int player)
                 }
             }
         }
-        board[best_points.pos[k].first][best_points.pos[k].second] = C_WHITE;
-        best_points.score[k] = evaluate(board).score;
+        board[best_points.pos[k].first][best_points.pos[k].second] = player;
+        best_points.score[k] = evaluate(board, player).score;
         board[best_points.pos[k].first][best_points.pos[k].second] = C_NONE;
         worth[best_points.pos[k].first][best_points.pos[k].second] = -INT_MAX; // 清除掉上一点,计算下一点的位置和分数
     }
     return best_points;
 }
 
-EVALUATION AIAlgorithms::evaluate(int board[16][16])
+EVALUATION AIAlgorithms::evaluate(int board[16][16], int player)
 {
+    int rboard[16][16];
+    copyBoard(board, rboard);
+    if (player == C_BLACK) {
+        reverseBoard(board, rboard);
+    }
     // 各棋型权重
     int weight[17] = { 0, 1000000, -10000000, 50000, -100000, 400, -100000, 400, -8000, 20, -50, 20, -50, 1, -3, 1, -3 };
 
@@ -163,7 +168,7 @@ EVALUATION AIAlgorithms::evaluate(int board[16][16])
         A[16][j] = 3;
     for (int i = 1; i <= 15; ++i)
         for (int j = 1; j <= 15; ++j)
-            A[i][j] = board[i][j];
+            A[i][j] = rboard[i][j];
 
     // 判断横向棋型
     for (i = 1; i <= 15; ++i) {

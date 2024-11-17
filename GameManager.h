@@ -26,8 +26,9 @@ private:
     bool IsBoardFull();
     bool GetPlayerMove(int& x, int& y);
     void PromptSaveAndQuit();
-    bool CheckDirection(int x, int y, int dx, int dy,
-        int player); // 添加这个函数声明
+    bool CheckDirection(int x, int y, int dx, int dy, int player);
+    int PlayerColor;
+    int AIColor;
 };
 
 #endif // GAMEMANAGER_H
