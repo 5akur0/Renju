@@ -29,17 +29,7 @@ void AI::MakeMove(Board& board, int player)
         lastMoveX = 8;
         lastMoveY = 8;
     }
-
-    // 确保落子位置有效
-    if (board.GetCell(lastMoveX, lastMoveY) == C_NONE) {
-        board.SetCell(lastMoveX, lastMoveY, player);
-    } else {
-        // 无效的落子位置，直接报错
-        std::cerr << "AI选择了无效的落子位置，运行终止" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-    std::cout << "AI选择的落子位置: (" << lastMoveX << ", " << lastMoveY << ")" << std::endl;
-
+    board.SetCell(lastMoveX, lastMoveY, player);
     // 结束计时，输出时间
     auto end = high_resolution_clock::now();
     auto duration = duration_cast<milliseconds>(end - start);

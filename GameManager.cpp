@@ -147,6 +147,7 @@ void GameManager::SaveGame() {
     }
     fprintf(file, "%d\n", moveCount); // 保存当前步数
     fprintf(file, "%d %d\n", lastMoveX, lastMoveY); // 保存最后一次落子的坐标
+    fprintf(file, "%d %d\n", PlayerColor, AIColor); // 保存玩家和AI的颜色
     for (int i = 1; i <= 15; i++) {
         for (int j = 1; j <= 15; j++) {
             fprintf(file, "%d ", board.GetCell(i, j));
@@ -181,6 +182,7 @@ void GameManager::LoadGame() {
     }
     fscanf(file, "%d", &moveCount); // 读取当前步数
     fscanf(file, "%d %d", &lastMoveX, &lastMoveY); // 读取最后一次落子的坐标
+    fscanf(file, "%d %d", &PlayerColor, &AIColor); // 读取玩家和AI的颜色
     for (int i = 1; i <= 15; i++) {
         for (int j = 1; j <= 15; j++) {
             int value;
