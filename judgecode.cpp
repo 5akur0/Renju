@@ -1,4 +1,21 @@
-```c++
+#include <bits/stdc++.h>
+using namespace std;
+
+class Board {
+public:
+    int win_end();
+    bool long_connect();
+    bool tt_special_case(std::string& m_str, size_t pos, int t_case);
+    bool ff_special_case(std::string& m_str, size_t pos, int f_case);
+    bool three_three();
+    bool four_four();
+    bool five_connect();
+    
+    int currentPlayer;
+    int preAction;
+    std::vector<int> state;
+};
+
 int Board::win_end() {
     int last_player = this->currentPlayer ^ 1;
     if (last_player == BLACK) {
@@ -507,6 +524,7 @@ const int BLACK = 1; //棋盘为黑
 const int WHITE = -1; // 棋盘为白
 const int EMPTY = 0; // 棋盘为空
 
+const int BOARD_LEN = 15; // Define the board length
+const int notOver = 0; // Game is not over
 const int CX[] = {-1, 1, 0, 0, 1, -1, -1, 1};
 const int CY[] = {0, 0, -1, 1, 1, -1, 1, -1};
-```
