@@ -230,3 +230,73 @@ EVALUATION AIAlgorithms::evaluate(int board[16][16], int player)
     eval.score = score;
     return eval;
 }
+
+std::vector<std::pair<int, int>> AIAlgorithms::seekKill(int board[16][16], int player)
+{
+    std::vector<std::pair<int, int>> ret;
+    POINTS P = seekPoints(board, player);
+    int sameBoard[16][16];
+    copyBoard(board, sameBoard);
+
+    for (int i = 0; i < NUM; ++i) {
+        sameBoard[P.pos[i].first][P.pos[i].second] = player;
+        if (evaluate(sameBoard, player).STAT[WIN] > 0) {
+            ret.push_back(P.pos[i]);
+        } else if (evaluate(sameBoard, player).STAT[FLEX4] > evaluate(board, player).STAT[FLEX4]) {
+            ret.push_back(P.pos[i]);
+        } else if (evaluate(sameBoard, player).STAT[BLOCK4] > evaluate(board, player).STAT[BLOCK4]) {
+            ret.push_back(P.pos[i]);
+        } else if (evaluate(sameBoard, player).STAT[FLEX3] > evaluate(board, player).STAT[FLEX3]) {
+            ret.push_back(P.pos[i]);
+        }
+        sameBoard[P.pos[i].first][P.pos[i].second] = C_NONE;
+    }
+    return ret;
+}
+
+bool AIAlgorithms::AnalysizeKill(int board[16][16], int depth, int player)
+{
+    if (depth == 0) {
+        POINTS P = seekPoints(board, player);
+        board[P.pos[0].first][P.pos[0].second] = player;
+        gameResult RESULT = evaluate(board, player).result;
+        if ((RESULT == R_WHITE && player == C_WHITE) || (RESULT == R_BLACK && player == C_BLACK)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    else if ((eval.RESULT == R_WHITE && player == C_WHITE) || (eval.RESULT == R_BLACK && player == C_BLACK)) {
+        return true
+    }
+    else if ((eval.RESULT == R_WHITE && player == C_BLACK) || (eval.RESULT == R_BLACK && player == C_WHITE)) {
+        return false;
+    }
+    else if (depth % 2 == 0) {
+        vector<pair<int, int>> kill = seekKill(board, player);
+        if (kill.size() == 0) {
+            return false;
+        }
+        for (auto k : kill) {
+            int sameBoard[16][16];
+            copyBoard(board, sameBoard);
+            sameBoard[k.first][k.second] = player;
+            if (AnalysizeKill(sameBoard, depth - 1, player)) {
+                if (depth == DEPTH) {
+                    decision.pos.first = k.first;
+                    decision.pos.second = k.second;
+                    decision.eval = INT_MAX;
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+    else {
+        POINTS PP = seekPoints(board, 3 - player);
+        int sameBoard[16][16];
+        copyBoard(board, sameBoard);
+        sameBoard[PP.pos[0].first][PP.pos[0].second] = 3 - player;
+        return AnalysizeKill(sameBoard, depth - 1, player);
+    }
+}

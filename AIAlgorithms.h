@@ -25,7 +25,8 @@ public:
     POINTS seekPoints(int board[16][16], int player);
     EVALUATION evaluate(int board[16][16], int player);
     DECISION getDecision() const;
-
+    std::vector<std::pair<int, int>> seekKill(int board[16][16], int player);
+    bool AnalysizeKill(int board[16][16], int depth, int player);
 private:
     DECISION decision;
 };
