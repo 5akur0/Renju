@@ -256,6 +256,7 @@ std::vector<std::pair<int, int>> AIAlgorithms::seekKill(int board[16][16], int p
 
 bool AIAlgorithms::AnalysizeKill(int board[16][16], int depth, int player)
 {
+    EVALUATION eval = evaluate(board, player);
     if (depth == 0) {
         POINTS P = seekPoints(board, player);
         board[P.pos[0].first][P.pos[0].second] = player;
@@ -266,14 +267,14 @@ bool AIAlgorithms::AnalysizeKill(int board[16][16], int depth, int player)
             return false;
         }
     }
-    else if ((eval.RESULT == R_WHITE && player == C_WHITE) || (eval.RESULT == R_BLACK && player == C_BLACK)) {
-        return true
+    else if ((eval.result == R_WHITE && player == C_WHITE) || (eval.result == R_BLACK && player == C_BLACK)) {
+        return true;
     }
-    else if ((eval.RESULT == R_WHITE && player == C_BLACK) || (eval.RESULT == R_BLACK && player == C_WHITE)) {
+    else if ((eval.result == R_WHITE && player == C_BLACK) || (eval.result == R_BLACK && player == C_WHITE)) {
         return false;
     }
     else if (depth % 2 == 0) {
-        vector<pair<int, int>> kill = seekKill(board, player);
+        std::vector<std::pair<int, int>> kill = seekKill(board, player);
         if (kill.size() == 0) {
             return false;
         }
@@ -282,7 +283,7 @@ bool AIAlgorithms::AnalysizeKill(int board[16][16], int depth, int player)
             copyBoard(board, sameBoard);
             sameBoard[k.first][k.second] = player;
             if (AnalysizeKill(sameBoard, depth - 1, player)) {
-                if (depth == DEPTH) {
+                if (depth == KILLDEPTH) {
                     decision.pos.first = k.first;
                     decision.pos.second = k.second;
                     decision.eval = INT_MAX;
