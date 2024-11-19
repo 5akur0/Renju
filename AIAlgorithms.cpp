@@ -35,16 +35,21 @@ void reverseBoard(const int src[16][16], int dest[16][16])
 
 int AIAlgorithms::AlphaBeta(int board[16][16], int depth, int alpha, int beta, int player)
 {
-    gameResult RESULT = evaluate(board, player).result;
-    if (depth == 0 || RESULT != R_DRAW) { // 如果模拟落子可以分出输赢，那么直接返回结果，不需要再搜索
-        if (depth == 0) {
-            POINTS P;
-            P = seekPoints(board, player); // 生成最佳的可能落子位置
-            return P.score[0]; // 返回最佳位置对应的最高分
-        } else {
-            return evaluate(board, player).score;
-        }
-    } else if (depth % 2 == 0) { // max层
+    EVALUATION eval = evaluate(board, player);
+    if (depth == 0) {
+        POINTS P = seekPoints(board, player);
+        return P.score[0];
+    }
+    if (eval.result != R_DRAW) {
+        return eval.score;
+    }
+    if ((eval.result == R_WHITE && player == C_WHITE) || (eval.result == R_BLACK && player == C_BLACK)) {
+        return INT_MAX;
+    }
+    if ((eval.result == R_WHITE && player == C_BLACK) || (eval.result == R_BLACK && player == C_WHITE)) {
+        return INT_MIN;
+    }
+    if (depth % 2 == 0) { // max层
         POINTS P = seekPoints(board, player);
         for (int i = 0; i < NUM; ++i) {
             int sameBoard[16][16];
@@ -293,11 +298,13 @@ bool AIAlgorithms::AnalysizeKill(int board[16][16], int depth, int player)
         }
         return false;
     }
-    else {
+    else if (depth % 2 == 1) {
         POINTS PP = seekPoints(board, 3 - player);
         int sameBoard[16][16];
         copyBoard(board, sameBoard);
         sameBoard[PP.pos[0].first][PP.pos[0].second] = 3 - player;
         return AnalysizeKill(sameBoard, depth - 1, player);
     }
+    std::cerr << "Error in AnalysizeKill" << std::endl;
+    return false;
 }
