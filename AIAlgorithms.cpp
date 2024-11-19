@@ -43,18 +43,12 @@ int AIAlgorithms::AlphaBeta(int board[16][16], int depth, int alpha, int beta, i
     if (eval.result != R_DRAW) {
         return eval.score;
     }
-    if ((eval.result == R_WHITE && player == C_WHITE) || (eval.result == R_BLACK && player == C_BLACK)) {
-        return INT_MAX;
-    }
-    if ((eval.result == R_WHITE && player == C_BLACK) || (eval.result == R_BLACK && player == C_WHITE)) {
-        return INT_MIN;
-    }
     if (depth % 2 == 0) { // max层
         POINTS P = seekPoints(board, player);
         for (int i = 0; i < NUM; ++i) {
             int sameBoard[16][16];
             copyBoard(board, sameBoard);
-            sameBoard[P.pos[i].first][P.pos[i].second] = player; // 模拟己方落子,不能用board,否则可能改变board的信息
+            sameBoard[P.pos[i].first][P.pos[i].second] = player; // 模拟己方落子
             int a = AlphaBeta(sameBoard, depth - 1, alpha, beta, 3 - player);
             if (a > alpha) {
                 alpha = a;
@@ -68,10 +62,10 @@ int AIAlgorithms::AlphaBeta(int board[16][16], int depth, int alpha, int beta, i
                 break; // 剪枝
         }
         return alpha;
-    } else { // min层,敌方(黑)决策
+    } else { // min层,敌方决策
         int rBoard[16][16];
         reverseBoard(board, rBoard);
-        POINTS P = seekPoints(rBoard, 3 - player); // 找对于敌方的最佳位置,需要将棋盘不同颜色反转,因为seekPoint是求白色方的最佳位置
+        POINTS P = seekPoints(rBoard, 3 - player); // 找对于敌方的最佳位置,需要将棋盘不同颜色反转
         for (int i = 0; i < NUM; ++i) {
             int sameBoard[16][16];
             copyBoard(board, sameBoard);
@@ -268,17 +262,33 @@ bool AIAlgorithms::AnalysizeKill(int board[16][16], int depth, int player)
         gameResult RESULT = evaluate(board, player).result;
         if ((RESULT == R_WHITE && player == C_WHITE) || (RESULT == R_BLACK && player == C_BLACK)) {
             return true;
-        } else {
-            return false;
         }
-    }
-    else if ((eval.result == R_WHITE && player == C_WHITE) || (eval.result == R_BLACK && player == C_BLACK)) {
-        return true;
-    }
-    else if ((eval.result == R_WHITE && player == C_BLACK) || (eval.result == R_BLACK && player == C_WHITE)) {
         return false;
     }
-    else if (depth % 2 == 0) {
+    if ((eval.result == R_WHITE && player == C_WHITE) || (eval.result == R_BLACK && player == C_BLACK)) {
+        return true;
+    }
+    if ((eval.result == R_WHITE && player == C_BLACK) || (eval.result == R_BLACK && player == C_WHITE)) {
+        return false;
+    }
+    if (depth % 2 == 0) {   // 我方决策
+        if (depth == KILLDEPTH || depth == KILLDEPTH - 2) {
+            POINTS P = seekPoints(board, player);
+            for (int i = 0; i < NUM; ++i) {
+                int sameBoard[16][16];
+                copyBoard(board, sameBoard);
+                sameBoard[P.pos[i].first][P.pos[i].second] = player;
+                if (AnalysizeKill(sameBoard, depth - 1, player)) {
+                    if (depth == KILLDEPTH) {
+                        decision.pos.first = P.pos[i].first;
+                        decision.pos.second = P.pos[i].second;
+                        decision.eval = INT_MAX;
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
         std::vector<std::pair<int, int>> kill = seekKill(board, player);
         if (kill.size() == 0) {
             return false;
@@ -288,23 +298,15 @@ bool AIAlgorithms::AnalysizeKill(int board[16][16], int depth, int player)
             copyBoard(board, sameBoard);
             sameBoard[k.first][k.second] = player;
             if (AnalysizeKill(sameBoard, depth - 1, player)) {
-                if (depth == KILLDEPTH) {
-                    decision.pos.first = k.first;
-                    decision.pos.second = k.second;
-                    decision.eval = INT_MAX;
-                }
                 return true;
             }
         }
         return false;
     }
-    else if (depth % 2 == 1) {
-        POINTS PP = seekPoints(board, 3 - player);
-        int sameBoard[16][16];
-        copyBoard(board, sameBoard);
-        sameBoard[PP.pos[0].first][PP.pos[0].second] = 3 - player;
-        return AnalysizeKill(sameBoard, depth - 1, player);
-    }
-    std::cerr << "Error in AnalysizeKill" << std::endl;
-    return false;
+    // 敌方决策，选择最好的位置
+    POINTS PP = seekPoints(board, 3 - player);
+    int sameBoard[16][16];
+    copyBoard(board, sameBoard);
+    sameBoard[PP.pos[0].first][PP.pos[0].second] = 3 - player;
+    return AnalysizeKill(sameBoard, depth - 1, player);
 }

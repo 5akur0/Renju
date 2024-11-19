@@ -21,7 +21,12 @@ void AI::MakeMove(Board& board, int player)
     auto start = high_resolution_clock::now();
 
     AIAlgorithms aiAlgorithms;
-    aiAlgorithms.AlphaBeta(board.board, DEPTH, INT_MIN, INT_MAX, player); // 使用常量 DEPTH
+    if (!aiAlgorithms.AnalysizeKill(board.board, KILLDEPTH, player)) {
+        aiAlgorithms.AlphaBeta(board.board, DEPTH, INT_MIN, INT_MAX, player);
+    }
+    else {
+        std::cout << "AI发现杀棋！" << std::endl;
+    }
     DECISION decision = aiAlgorithms.getDecision();
     lastMoveX = decision.pos.first;
     lastMoveY = decision.pos.second;
