@@ -22,6 +22,7 @@ struct DECISION {
 
 class AIAlgorithms {
 public:
+    void iterativeDeepening(int board[16][16], int player);
     int alphaBeta(int board[16][16], int depth, int alpha, int beta, int player);
     POINTS seekPoints(int board[16][16], int player);
     EVALUATION evaluate(int board[16][16], int player);

@@ -33,6 +33,19 @@ void reverseBoard(const int src[16][16], int dest[16][16])
     }
 }
 
+// 迭代加深的 AlphaBeta 搜索
+void AIAlgorithms::iterativeDeepening(int board[16][16], int player)
+{
+    for (int depth = 2; depth <= DEPTH; depth += 2) {
+        alphaBeta(board, depth, INT_MIN, INT_MAX, player);
+        // 如果找到胜利走法，提前退出
+        if (decision.eval >= WIN) {
+            return;
+        }
+    }
+    return;
+}
+
 int AIAlgorithms::alphaBeta(int board[16][16], int depth, int alpha, int beta, int player)
 {
     EVALUATION eval = evaluate(board, player);

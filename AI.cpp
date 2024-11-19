@@ -24,7 +24,7 @@ void AI::MakeMove(Board& board, int player)
     if (aiAlgorithms.analysizeKill(board.board, KILLDEPTH, player)) {
         cout << "AI杀棋" << endl;
     } else {
-        aiAlgorithms.alphaBeta(board.board, DEPTH, -INT_MAX, INT_MAX, player);
+        aiAlgorithms.iterativeDeepening(board.board, player);
     }
     DECISION decision = aiAlgorithms.getDecision();
     lastMoveX = decision.pos.first;
