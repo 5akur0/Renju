@@ -33,7 +33,7 @@ void reverseBoard(const int src[16][16], int dest[16][16])
     }
 }
 
-int AIAlgorithms::AlphaBeta(int board[16][16], int depth, int alpha, int beta, int player)
+int AIAlgorithms::alphaBeta(int board[16][16], int depth, int alpha, int beta, int player)
 {
     EVALUATION eval = evaluate(board, player);
     if (depth == 0) {
@@ -49,7 +49,7 @@ int AIAlgorithms::AlphaBeta(int board[16][16], int depth, int alpha, int beta, i
             int sameBoard[16][16];
             copyBoard(board, sameBoard);
             sameBoard[P.pos[i].first][P.pos[i].second] = player; // 模拟己方落子
-            int a = AlphaBeta(sameBoard, depth - 1, alpha, beta, 3 - player);
+            int a = alphaBeta(sameBoard, depth - 1, alpha, beta, 3 - player);
             if (a > alpha) {
                 alpha = a;
                 if (depth == DEPTH) {
@@ -70,7 +70,7 @@ int AIAlgorithms::AlphaBeta(int board[16][16], int depth, int alpha, int beta, i
             int sameBoard[16][16];
             copyBoard(board, sameBoard);
             sameBoard[P.pos[i].first][P.pos[i].second] = 3 - player; // 模拟敌方落子
-            int a = AlphaBeta(sameBoard, depth - 1, alpha, beta, player);
+            int a = alphaBeta(sameBoard, depth - 1, alpha, beta, player);
             if (a < beta)
                 beta = a;
             if (beta <= alpha)
@@ -253,7 +253,7 @@ std::vector<std::pair<int, int>> AIAlgorithms::seekKill(int board[16][16], int p
     return ret;
 }
 
-bool AIAlgorithms::AnalysizeKill(int board[16][16], int depth, int player)
+bool AIAlgorithms::analysizeKill(int board[16][16], int depth, int player)
 {
     EVALUATION eval = evaluate(board, player);
     if (depth == 0) {
@@ -278,7 +278,7 @@ bool AIAlgorithms::AnalysizeKill(int board[16][16], int depth, int player)
                 int sameBoard[16][16];
                 copyBoard(board, sameBoard);
                 sameBoard[P.pos[i].first][P.pos[i].second] = player;
-                if (AnalysizeKill(sameBoard, depth - 1, player)) {
+                if (analysizeKill(sameBoard, depth - 1, player)) {
                     if (depth == KILLDEPTH) {
                         decision.pos.first = P.pos[i].first;
                         decision.pos.second = P.pos[i].second;
@@ -297,7 +297,7 @@ bool AIAlgorithms::AnalysizeKill(int board[16][16], int depth, int player)
             int sameBoard[16][16];
             copyBoard(board, sameBoard);
             sameBoard[k.first][k.second] = player;
-            if (AnalysizeKill(sameBoard, depth - 1, player)) {
+            if (analysizeKill(sameBoard, depth - 1, player)) {
                 return true;
             }
         }
@@ -308,5 +308,5 @@ bool AIAlgorithms::AnalysizeKill(int board[16][16], int depth, int player)
     int sameBoard[16][16];
     copyBoard(board, sameBoard);
     sameBoard[PP.pos[0].first][PP.pos[0].second] = 3 - player;
-    return AnalysizeKill(sameBoard, depth - 1, player);
+    return analysizeKill(sameBoard, depth - 1, player);
 }

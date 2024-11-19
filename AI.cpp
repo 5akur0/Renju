@@ -15,17 +15,16 @@ AI::AI()
 
 void AI::MakeMove(Board& board, int player)
 {
-    using namespace std::chrono; // 使用 chrono 命名空间
+    using namespace std;
 
     // 开始计时
-    auto start = high_resolution_clock::now();
+    auto start = chrono::high_resolution_clock::now();
 
     AIAlgorithms aiAlgorithms;
-    if (!aiAlgorithms.AnalysizeKill(board.board, KILLDEPTH, player)) {
-        aiAlgorithms.AlphaBeta(board.board, DEPTH, INT_MIN, INT_MAX, player);
-    }
-    else {
-        std::cout << "AI发现杀棋！" << std::endl;
+    if (aiAlgorithms.analysizeKill(board.board, KILLDEPTH, player)) {
+        cout << "AI杀棋" << endl;
+    } else {
+        aiAlgorithms.alphaBeta(board.board, DEPTH, -INT_MAX, INT_MAX, player);
     }
     DECISION decision = aiAlgorithms.getDecision();
     lastMoveX = decision.pos.first;
@@ -36,12 +35,12 @@ void AI::MakeMove(Board& board, int player)
     }
     board.SetCell(lastMoveX, lastMoveY, player);
     // 结束计时，输出时间
-    auto end = high_resolution_clock::now();
-    auto duration = duration_cast<milliseconds>(end - start);
+    auto end = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
     if (duration.count() < 200) {
-        std::this_thread::sleep_for(milliseconds(200) - duration);
+        this_thread::sleep_for(chrono::milliseconds(200) - duration);
     }
-    std::cout << "AI思考时间: " << duration.count() << "毫秒" << std::endl;
+    cout << "AI思考时间: " << duration.count() << "毫秒" << endl;
 }
 
 int AI::GetLastMoveX() const
