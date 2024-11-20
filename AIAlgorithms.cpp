@@ -39,7 +39,7 @@ void AIAlgorithms::iterativeDeepening(int board[16][16], int player)
     for (int depth = 2; depth <= DEPTH; depth += 2) {
         alphaBeta(board, depth, INT_MIN, INT_MAX, player);
         // 如果找到胜利走法，提前退出
-        if (decision.eval >= WIN) {
+        if (decision.eval >= 1000000) {
             return;
         }
     }

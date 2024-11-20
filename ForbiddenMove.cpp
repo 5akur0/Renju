@@ -9,10 +9,11 @@ int flag;
 
 bool isForbiddenMove(int board[16][16], int x, int y)
 {
+    /*
     board[x][y] = C_BLACK;
     make_state(board);
-    flag = (x - 1) * 15 + y - 1;
     board[x][y] = C_NONE;
+    flag = (x - 1) * 15 + y - 1;
     if (long_connect()) {
         return true;
     }
@@ -22,6 +23,7 @@ bool isForbiddenMove(int board[16][16], int x, int y)
     if (three_three() || four_four()) {
         return true;
     }
+    */
     return false;
 }
 
@@ -52,7 +54,7 @@ bool long_connect()
         }
         ret = 0;
         for (int k = i; k < i + 6; k++) {
-            if (state[k] != C_BLACK) {
+            if (state[k] != 1) {
                 ret = 1;
                 break;
             }
@@ -67,7 +69,7 @@ bool long_connect()
         }
         ret = 0;
         for (int k = i; k < i + 6 * 15; k += 15) {
-            if (state[k] != C_BLACK) {
+            if (state[k] != 1) {
                 ret = 1;
                 break;
             }
@@ -82,7 +84,7 @@ bool long_connect()
         }
         ret = 0;
         for (int k = i; k < i + 6 * 15 + 6; k += 15 + 1) {
-            if (state[k] != C_BLACK) {
+            if (state[k] != 1) {
                 ret = 1;
                 break;
             }
@@ -97,7 +99,7 @@ bool long_connect()
         }
         ret = 0;
         for (int k = i; k > i - 6 * 15 + 6; k += (-(15) + 1)) {
-            if (state[k] != C_BLACK) {
+            if (state[k] != 1) {
                 ret = 1;
                 break;
             }
@@ -307,7 +309,7 @@ bool four_four()
 {
     int h = flag / 15;
     int w = flag % 15;
-    int last_player = C_BLACK;
+    int last_player = 1;
     int last_move = flag;
     int width = 15;
     size_t pos;
@@ -485,7 +487,7 @@ bool five_connect()
 {
     int h = flag / 15;
     int w = flag % 15;
-    int last_player = C_BLACK;
+    int last_player = 1;
     int last_move = flag;
     int i, j;
     int ret;
