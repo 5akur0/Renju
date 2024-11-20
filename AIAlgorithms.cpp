@@ -124,11 +124,11 @@ POINTS AIAlgorithms::seekPoints(int board[16][16], int player)
             if (board[i][j] == C_NONE && B[i][j] == true) {
                 if (player == C_BLACK && isForbiddenMove(board, i, j)) {
                     std::cout << "发现禁手" << std::endl;
-                    continue;
+                } else {
+                    board[i][j] = player;
+                    worth[i][j] = evaluate(board, player).score;
+                    board[i][j] = C_NONE;
                 }
-                board[i][j] = player;
-                worth[i][j] = evaluate(board, player).score;
-                board[i][j] = C_NONE;
             }
         }
     }
@@ -285,7 +285,7 @@ bool AIAlgorithms::analysizeKill(int board[16][16], int depth, int player)
     if ((eval.result == R_WHITE && player == C_BLACK) || (eval.result == R_BLACK && player == C_WHITE)) {
         return false;
     }
-    if (depth % 2 == 0) {   // 我方决策
+    if (depth % 2 == 0) { // 我方决策
         if (depth == KILLDEPTH || depth == KILLDEPTH - 2) {
             POINTS P = seekPoints(board, player);
             for (int i = 0; i < NUM; ++i) {
