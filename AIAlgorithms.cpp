@@ -63,6 +63,14 @@ int AIAlgorithms::alphaBeta(int board[16][16], int depth, int alpha, int beta, i
             copyBoard(board, sameBoard);
             sameBoard[P.pos[i].first][P.pos[i].second] = player; // 模拟己方落子
             int a = alphaBeta(sameBoard, depth - 1, alpha, beta, 3 - player);
+            if (a >= 1000000) {
+                if (depth == DEPTH) {
+                    decision.pos.first = P.pos[i].first;
+                    decision.pos.second = P.pos[i].second;
+                    decision.eval = a;
+                }
+                return a;
+            }
             if (a > alpha) {
                 alpha = a;
                 if (depth == DEPTH) {
@@ -135,7 +143,7 @@ POINTS AIAlgorithms::seekPoints(int board[16][16], int player)
 
     int w;
     for (int k = 0; k < NUM; ++k) {
-        w = -INT_MAX;
+        w = INT_MIN;
         for (int i = 1; i <= 15; ++i) {
             for (int j = 1; j <= 15; ++j) {
                 if (worth[i][j] > w) {
@@ -148,7 +156,7 @@ POINTS AIAlgorithms::seekPoints(int board[16][16], int player)
         board[best_points.pos[k].first][best_points.pos[k].second] = player;
         best_points.score[k] = evaluate(board, player).score;
         board[best_points.pos[k].first][best_points.pos[k].second] = C_NONE;
-        worth[best_points.pos[k].first][best_points.pos[k].second] = -INT_MAX; // 清除掉上一点,计算下一点的位置和分数
+        worth[best_points.pos[k].first][best_points.pos[k].second] = INT_MIN; // 清除掉上一点,计算下一点的位置和分数
     }
     return best_points;
 }
@@ -241,6 +249,7 @@ EVALUATION AIAlgorithms::evaluate(int board[16][16], int player)
         eval.result = R_BLACK;
 
     eval.score = score;
+
     return eval;
 }
 

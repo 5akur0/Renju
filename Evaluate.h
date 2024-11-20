@@ -10,7 +10,7 @@
 
 // 棋型代号 下标 权重
 #define OTHER 0 // 0,其他棋型不考虑
-#define WIN 1 // 100000,白赢
+#define WIN 1 // 1000000,白赢
 #define LOSE 2 //-10000000
 #define FLEX4 3 // 50000,白活4
 #define flex4 4 //-80000
