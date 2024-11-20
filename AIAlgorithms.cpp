@@ -123,6 +123,7 @@ POINTS AIAlgorithms::seekPoints(int board[16][16], int player)
             worth[i][j] = INT_MIN;
             if (board[i][j] == C_NONE && B[i][j] == true) {
                 if (player == C_BLACK && isForbiddenMove(board, i, j)) {
+                    std::cout << "发现禁手" << std::endl;
                     continue;
                 }
                 board[i][j] = player;

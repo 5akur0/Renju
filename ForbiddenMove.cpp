@@ -4,48 +4,107 @@
 
 #include "Evaluate.h"
 
+int state[225];
+
 bool isForbiddenMove(int board[16][16], int x, int y)
 {
-    return false;
-}
-
-/*
-bool check_direction(int board[16][16], int x, int y, int dx, int dy)
-{
-    int count = 0;
-    for (int i = -5; i <= 0; ++i) {
-        count = 0;
-        for (int j = 0; j < 6; ++j) {
-            int nx = x + (i + j) * dx;
-            int ny = y + (i + j) * dy;
-            if (nx >= 1 && nx <= 15 && ny >= 1 && ny <= 15 && board[nx][ny] == C_BLACK) {
-                count++;
-            } else {
-                break;
-            }
-        }
-        if (count == 6) {
-            return true;
-        }
+    board[x][y] = C_BLACK;
+    make_state(board);
+    if (long_connect()) {
+        return true;
+    }
+    if (five_connect()) {
+        return false;
+    }
+    if (three_three() || four_four()) {
+        return true;
     }
     return false;
 }
 
-bool long_connect(int board[16][16], int x, int y)
-{
-    // 检查水平方向
-    if (check_direction(board, x, y, 0, 1))
-        return true;
-    // 检查垂直方向
-    if (check_direction(board, x, y, 1, 0))
-        return true;
-    // 检查左上到右下方向
-    if (check_direction(board, x, y, 1, 1))
-        return true;
-    // 检查右上到左下方向
-    if (check_direction(board, x, y, 1, -1))
-        return true;
+int x, y;
+int flag = (x - 1) * 15 + (y - 1);
 
+void make_state(int board[16][16])
+{
+    for (int i = 0; i < 225; ++i) {
+        if (board[i / 15 + 1][i % 15 + 1] == C_BLACK) {
+            state[i] = 1;
+        } else if (board[i / 15 + 1][i % 15 + 1] == C_WHITE) {
+            state[i] = -1;
+        } else {
+            state[i] = 0;
+        }
+    }
+}
+
+bool long_connect()
+{
+    int h = flag / 15;
+    int w = flag % 15;
+    int last_move = flag;
+    int ret;
+
+    int bias = std::min(w, 5);
+    for (int i = last_move - bias; i < last_move + 1; i++) {
+        if (15 - 1 - i % 15 < 5) {
+            break;
+        }
+        ret = 0;
+        for (int k = i; k < i + 6; k++) {
+            if (state[k] != C_BLACK) {
+                ret = 1;
+                break;
+            }
+        }
+        if (ret == 0)
+            return true;
+    }
+    bias = std::min(h, 5);
+    for (int i = last_move - bias * 15; i < last_move + 15; i += 15) {
+        if (15 - 1 - i / 15 < 5) {
+            break;
+        }
+        ret = 0;
+        for (int k = i; k < i + 6 * 15; k += 15) {
+            if (state[k] != C_BLACK) {
+                ret = 1;
+                break;
+            }
+        }
+        if (ret == 0)
+            return true;
+    }
+    bias = std::min(std::min(h, 5), std::min(w, 5));
+    for (int i = last_move - bias * 15 - bias; i < last_move + 15 + 1; i += 15 + 1) {
+        if ((15 - 1 - i / 15 < 5) || (15 - 1 - i % 15 < 5)) {
+            break;
+        }
+        ret = 0;
+        for (int k = i; k < i + 6 * 15 + 6; k += 15 + 1) {
+            if (state[k] != C_BLACK) {
+                ret = 1;
+                break;
+            }
+        }
+        if (ret == 0)
+            return true;
+    }
+    bias = std::min(std::min(15 - 1 - h, 5), std::min(w, 5));
+    for (int i = last_move + bias * 15 - bias; i > last_move - 15 + 1; i += (-(15) + 1)) {
+        if ((15 - 1 - i % 15 < 5) || (i / 15 < 5)) {
+            break;
+        }
+        ret = 0;
+        for (int k = i; k > i - 6 * 15 + 6; k += (-(15) + 1)) {
+            if (state[k] != C_BLACK) {
+                ret = 1;
+                break;
+            }
+        }
+        if (ret == 0)
+            return true;
+    }
     return false;
 }
 
@@ -113,8 +172,12 @@ bool ff_special_case(std::string& m_str, size_t pos, int f_case)
     }
 }
 
-bool three_three(int board[16][16], int x, int y)
+bool three_three()
 {
+    int h = flag / 15;
+    int w = flag % 15;
+    int last_move = flag;
+    int width = 15;
     std::string jt1 = "o1o11o";
     std::string jt2 = "o11o1o";
     std::string ct1 = "oo111o";
@@ -122,11 +185,11 @@ bool three_three(int board[16][16], int x, int y)
     int three = 0;
     std::string m_str;
     size_t pos;
-    int bias = min(w, 4);
-    for (int i = last_move - bias; i < last_move + min(width - 1 - w, 4) + 1; i++) {
-        if (this->state[i] == -1) {
+    int bias = std::min(w, 4);
+    for (int i = last_move - bias; i < last_move + std::min(width - 1 - w, 4) + 1; i++) {
+        if (state[i] == -1) {
             m_str.append(1, 'o');
-        } else if (this->state[i] == 0) {
+        } else if (state[i] == 0) {
             m_str.append(1, '0');
         } else {
             m_str.append(1, '1');
@@ -134,12 +197,12 @@ bool three_three(int board[16][16], int x, int y)
     }
     pos = m_str.find(ct1);
     if (pos != m_str.npos) {
-        if (this->tt_special_case(m_str, pos, 1) == false)
+        if (tt_special_case(m_str, pos, 1) == false)
             three++;
     } else {
         pos = m_str.find(ct2);
         if (pos != m_str.npos) {
-            if (this->tt_special_case(m_str, pos, 2) == false)
+            if (tt_special_case(m_str, pos, 2) == false)
                 three++;
         }
     }
@@ -151,11 +214,11 @@ bool three_three(int board[16][16], int x, int y)
         return true;
 
     m_str.clear();
-    bias = min(h, 4);
-    for (int i = last_move - bias * width; i < last_move + width * min(width - 1 - h, 4) + width; i += width) {
-        if (this->state[i] == -1) {
+    bias = std::min(h, 4);
+    for (int i = last_move - bias * width; i < last_move + width * std::min(width - 1 - h, 4) + width; i += width) {
+        if (state[i] == -1) {
             m_str.append(1, 'o');
-        } else if (this->state[i] == 0) {
+        } else if (state[i] == 0) {
             m_str.append(1, '0');
         } else {
             m_str.append(1, '1');
@@ -163,12 +226,12 @@ bool three_three(int board[16][16], int x, int y)
     }
     pos = m_str.find(ct1);
     if (pos != m_str.npos) {
-        if (this->tt_special_case(m_str, pos, 1) == false)
+        if (tt_special_case(m_str, pos, 1) == false)
             three++;
     } else {
         pos = m_str.find(ct2);
         if (pos != m_str.npos) {
-            if (this->tt_special_case(m_str, pos, 2) == false)
+            if (tt_special_case(m_str, pos, 2) == false)
                 three++;
         }
     }
@@ -180,11 +243,11 @@ bool three_three(int board[16][16], int x, int y)
         return true;
 
     m_str.clear();
-    bias = min(min(h, 4), min(w, 4));
-    for (int i = last_move - bias * width - bias; i < last_move + (width + 1) * min(min(width - 1 - h, width - 1 - w), 4) + width + 1; i += width + 1) {
-        if (this->state[i] == -1) {
+    bias = std::min(std::min(h, 4), std::min(w, 4));
+    for (int i = last_move - bias * width - bias; i < last_move + (width + 1) * std::min(std::min(width - 1 - h, width - 1 - w), 4) + width + 1; i += width + 1) {
+        if (state[i] == -1) {
             m_str.append(1, 'o');
-        } else if (this->state[i] == 0) {
+        } else if (state[i] == 0) {
             m_str.append(1, '0');
         } else {
             m_str.append(1, '1');
@@ -192,12 +255,12 @@ bool three_three(int board[16][16], int x, int y)
     }
     pos = m_str.find(ct1);
     if (pos != m_str.npos) {
-        if (this->tt_special_case(m_str, pos, 1) == false)
+        if (tt_special_case(m_str, pos, 1) == false)
             three++;
     } else {
         pos = m_str.find(ct2);
         if (pos != m_str.npos) {
-            if (this->tt_special_case(m_str, pos, 2) == false)
+            if (tt_special_case(m_str, pos, 2) == false)
                 three++;
         }
     }
@@ -209,11 +272,11 @@ bool three_three(int board[16][16], int x, int y)
         return true;
 
     m_str.clear();
-    bias = min(min(width - 1 - w, 4), min(h, 4));
-    for (int i = last_move - bias * (width - 1); i < last_move + (width - 1) * min(min(width - 1 - h, min(w, 4)), 4) + width - 1; i += width - 1) {
-        if (this->state[i] == -1) {
+    bias = std::min(std::min(width - 1 - w, 4), std::min(h, 4));
+    for (int i = last_move - bias * (width - 1); i < last_move + (width - 1) * std::min(std::min(width - 1 - h, std::min(w, 4)), 4) + width - 1; i += width - 1) {
+        if (state[i] == -1) {
             m_str.append(1, 'o');
-        } else if (this->state[i] == 0) {
+        } else if (state[i] == 0) {
             m_str.append(1, '0');
         } else {
             m_str.append(1, '1');
@@ -221,12 +284,12 @@ bool three_three(int board[16][16], int x, int y)
     }
     pos = m_str.find(ct1);
     if (pos != m_str.npos) {
-        if (this->tt_special_case(m_str, pos, 1) == false)
+        if (tt_special_case(m_str, pos, 1) == false)
             three++;
     } else {
         pos = m_str.find(ct2);
         if (pos != m_str.npos) {
-            if (this->tt_special_case(m_str, pos, 2) == false)
+            if (tt_special_case(m_str, pos, 2) == false)
                 three++;
         }
     }
@@ -240,28 +303,28 @@ bool three_three(int board[16][16], int x, int y)
     return false;
 }
 
-bool four_four(int board[16][16], int x, int y)
+bool four_four()
 {
-    int h = this->preAction / BOARD_LEN;
-    int w = this->preAction % BOARD_LEN;
-    int last_player = this->currentPlayer ^ 1;
-    int last_move = this->preAction;
-    int width = BOARD_LEN;
+    int h = flag / 15;
+    int w = flag % 15;
+    int last_player = C_BLACK;
+    int last_move = flag;
+    int width = 15;
     size_t pos;
-    string jf1 = "111o1";
-    string jf2 = "1o111";
-    string jf3 = "11o11";
-    string cf1 = "o1111";
-    string cf2 = "1111o";
+    std::string jf1 = "111o1";
+    std::string jf2 = "1o111";
+    std::string jf3 = "11o11";
+    std::string cf1 = "o1111";
+    std::string cf2 = "1111o";
     int four = 0;
-    string m_str;
+    std::string m_str;
     int bias;
 
-    bias = min(w, 5);
-    for (int i = last_move - bias; i < last_move + min(width - 1 - w, 5) + 1; i++) {
-        if (this->state[i] == -1) {
+    bias = std::min(w, 5);
+    for (int i = last_move - bias; i < last_move + std::min(width - 1 - w, 5) + 1; i++) {
+        if (state[i] == -1) {
             m_str.append(1, 'o');
-        } else if (this->state[i] == 0) {
+        } else if (state[i] == 0) {
             m_str.append(1, '0');
         } else {
             m_str.append(1, '1');
@@ -269,27 +332,27 @@ bool four_four(int board[16][16], int x, int y)
     }
     pos = m_str.find(jf1);
     if (pos != m_str.npos) {
-        if (this->ff_special_case(m_str, pos, 1) == false)
+        if (ff_special_case(m_str, pos, 1) == false)
             four++;
     }
     pos = m_str.find(jf2);
     if (pos != m_str.npos) {
-        if (this->ff_special_case(m_str, pos, 1) == false)
+        if (ff_special_case(m_str, pos, 1) == false)
             four++;
     }
     pos = m_str.find(jf3);
     if (pos != m_str.npos) {
-        if (this->ff_special_case(m_str, pos, 1) == false)
+        if (ff_special_case(m_str, pos, 1) == false)
             four++;
     }
     pos = m_str.find(cf1);
     if (pos != m_str.npos) {
-        if (this->ff_special_case(m_str, pos, 2) == false)
+        if (ff_special_case(m_str, pos, 2) == false)
             four++;
     } else {
         pos = m_str.find(cf2);
         if (pos != m_str.npos) {
-            if (this->ff_special_case(m_str, pos, 3) == false)
+            if (ff_special_case(m_str, pos, 3) == false)
                 four++;
         }
     }
@@ -297,11 +360,11 @@ bool four_four(int board[16][16], int x, int y)
         return true;
 
     m_str.clear();
-    bias = min(h, 5);
-    for (int i = last_move - bias * width; i < last_move + width * min(width - 1 - h, 5) + width; i += width) {
-        if (this->state[i] == -1) {
+    bias = std::min(h, 5);
+    for (int i = last_move - bias * width; i < last_move + width * std::min(width - 1 - h, 5) + width; i += width) {
+        if (state[i] == -1) {
             m_str.append(1, 'o');
-        } else if (this->state[i] == 0) {
+        } else if (state[i] == 0) {
             m_str.append(1, '0');
         } else {
             m_str.append(1, '1');
@@ -309,27 +372,27 @@ bool four_four(int board[16][16], int x, int y)
     }
     pos = m_str.find(jf1);
     if (pos != m_str.npos) {
-        if (this->ff_special_case(m_str, pos, 1) == false)
+        if (ff_special_case(m_str, pos, 1) == false)
             four++;
     }
     pos = m_str.find(jf2);
     if (pos != m_str.npos) {
-        if (this->ff_special_case(m_str, pos, 1) == false)
+        if (ff_special_case(m_str, pos, 1) == false)
             four++;
     }
     pos = m_str.find(jf3);
     if (pos != m_str.npos) {
-        if (this->ff_special_case(m_str, pos, 1) == false)
+        if (ff_special_case(m_str, pos, 1) == false)
             four++;
     }
     pos = m_str.find(cf1);
     if (pos != m_str.npos) {
-        if (this->ff_special_case(m_str, pos, 2) == false)
+        if (ff_special_case(m_str, pos, 2) == false)
             four++;
     } else {
         pos = m_str.find(cf2);
         if (pos != m_str.npos) {
-            if (this->ff_special_case(m_str, pos, 3) == false)
+            if (ff_special_case(m_str, pos, 3) == false)
                 four++;
         }
     }
@@ -337,11 +400,11 @@ bool four_four(int board[16][16], int x, int y)
         return true;
 
     m_str.clear();
-    bias = min(min(h, 5), min(w, 5));
-    for (int i = last_move - bias * width - bias; i < last_move + (width + 1) * min(min(width - 1 - h, width - 1 - w), 5) + width + 1; i += width + 1) {
-        if (this->state[i] == -1) {
+    bias = std::min(std::min(h, 5), std::min(w, 5));
+    for (int i = last_move - bias * width - bias; i < last_move + (width + 1) * std::min(std::min(width - 1 - h, width - 1 - w), 5) + width + 1; i += width + 1) {
+        if (state[i] == -1) {
             m_str.append(1, 'o');
-        } else if (this->state[i] == 0) {
+        } else if (state[i] == 0) {
             m_str.append(1, '0');
         } else {
             m_str.append(1, '1');
@@ -349,27 +412,27 @@ bool four_four(int board[16][16], int x, int y)
     }
     pos = m_str.find(jf1);
     if (pos != m_str.npos) {
-        if (this->ff_special_case(m_str, pos, 1) == false)
+        if (ff_special_case(m_str, pos, 1) == false)
             four++;
     }
     pos = m_str.find(jf2);
     if (pos != m_str.npos) {
-        if (this->ff_special_case(m_str, pos, 1) == false)
+        if (ff_special_case(m_str, pos, 1) == false)
             four++;
     }
     pos = m_str.find(jf3);
     if (pos != m_str.npos) {
-        if (this->ff_special_case(m_str, pos, 1) == false)
+        if (ff_special_case(m_str, pos, 1) == false)
             four++;
     }
     pos = m_str.find(cf1);
     if (pos != m_str.npos) {
-        if (this->ff_special_case(m_str, pos, 2) == false)
+        if (ff_special_case(m_str, pos, 2) == false)
             four++;
     } else {
         pos = m_str.find(cf2);
         if (pos != m_str.npos) {
-            if (this->ff_special_case(m_str, pos, 3) == false)
+            if (ff_special_case(m_str, pos, 3) == false)
                 four++;
         }
     }
@@ -377,11 +440,11 @@ bool four_four(int board[16][16], int x, int y)
         return true;
 
     m_str.clear();
-    bias = min(min(width - 1 - w, 5), min(h, 5));
-    for (int i = last_move - bias * (width - 1); i < last_move + (width - 1) * min(min(width - 1 - h, min(w, 5)), 5) + width - 1; i += width - 1) {
-        if (this->state[i] == -1) {
+    bias = std::min(std::min(width - 1 - w, 5), std::min(h, 5));
+    for (int i = last_move - bias * (width - 1); i < last_move + (width - 1) * std::min(std::min(width - 1 - h, std::min(w, 5)), 5) + width - 1; i += width - 1) {
+        if (state[i] == -1) {
             m_str.append(1, 'o');
-        } else if (this->state[i] == 0) {
+        } else if (state[i] == 0) {
             m_str.append(1, '0');
         } else {
             m_str.append(1, '1');
@@ -389,27 +452,27 @@ bool four_four(int board[16][16], int x, int y)
     }
     pos = m_str.find(jf1);
     if (pos != m_str.npos) {
-        if (this->ff_special_case(m_str, pos, 1) == false)
+        if (ff_special_case(m_str, pos, 1) == false)
             four++;
     }
     pos = m_str.find(jf2);
     if (pos != m_str.npos) {
-        if (this->ff_special_case(m_str, pos, 1) == false)
+        if (ff_special_case(m_str, pos, 1) == false)
             four++;
     }
     pos = m_str.find(jf3);
     if (pos != m_str.npos) {
-        if (this->ff_special_case(m_str, pos, 1) == false)
+        if (ff_special_case(m_str, pos, 1) == false)
             four++;
     }
     pos = m_str.find(cf1);
     if (pos != m_str.npos) {
-        if (this->ff_special_case(m_str, pos, 2) == false)
+        if (ff_special_case(m_str, pos, 2) == false)
             four++;
     } else {
         pos = m_str.find(cf2);
         if (pos != m_str.npos) {
-            if (this->ff_special_case(m_str, pos, 3) == false)
+            if (ff_special_case(m_str, pos, 3) == false)
                 four++;
         }
     }
@@ -417,4 +480,83 @@ bool four_four(int board[16][16], int x, int y)
         return true;
     return false;
 }
-*/
+
+bool five_connect()
+{
+    int h = flag / 15;
+    int w = flag % 15;
+    int last_player = C_BLACK;
+    int last_move = flag;
+    int i, j;
+    int ret;
+    if (flag == -1)
+        return false;
+    int bias = std::min(w, 4);
+    for (i = last_move - bias; i < last_move + 1; i++) {
+        if (15 - 1 - i % (15) < 4) {
+            break;
+        }
+        ret = 0;
+        for (j = i; j < i + 5; j++) {
+
+            if (state[j] != last_player) {
+                ret = 1;
+                break;
+            }
+        }
+        if (ret == 0) {
+            return true;
+        }
+    }
+    bias = std::min(h, 4);
+    for (i = last_move - bias * 15; i < last_move + 15; i += 15) {
+        if (15 - 1 - i / 15 < 4) {
+            break;
+        }
+        ret = 0;
+        for (j = i; j < i + 5 * 15; j += 15) {
+
+            if (state[j] != last_player) {
+                ret = 1;
+                break;
+            }
+        }
+        if (ret == 0) {
+            return true;
+        }
+    }
+    bias = std::min(std::min(h, 4), std::min(w, 4));
+    for (i = last_move - bias * 15 - bias; i < last_move + 15 + 1; i += 15 + 1) {
+        if ((15 - 1 - i / 15 < 4) || (15 - 1 - i % 15 < 4)) {
+            break;
+        }
+        ret = 0;
+        for (j = i; j < i + 5 * 15 + 5; j += 15 + 1) {
+
+            if (state[j] != last_player) {
+                ret = 1;
+                break;
+            }
+        }
+        if (ret == 0) {
+            return true;
+        }
+    }
+    bias = std::min(std::min(15 - 1 - h, 4), std::min(w, 4));
+    for (i = last_move + bias * 15 - bias; i > last_move - 15 + 1; i = i - 15 + 1) {
+        if ((15 - 1 - i % 15 < 4) || (i / 15 < 4)) {
+            break;
+        }
+        ret = 0;
+        for (j = i; j > i - 5 * 15 + 5; j = j - 15 + 1) {
+            if (state[j] != last_player) {
+                ret = 1;
+                break;
+            }
+        }
+        if (ret == 0) {
+            return true;
+        }
+    }
+    return false;
+}
