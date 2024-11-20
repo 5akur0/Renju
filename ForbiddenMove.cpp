@@ -5,11 +5,14 @@
 #include "Evaluate.h"
 
 int state[225];
+int flag;
 
 bool isForbiddenMove(int board[16][16], int x, int y)
 {
     board[x][y] = C_BLACK;
     make_state(board);
+    flag = (x - 1) * 15 + y - 1;
+    board[x][y] = C_NONE;
     if (long_connect()) {
         return true;
     }
@@ -21,9 +24,6 @@ bool isForbiddenMove(int board[16][16], int x, int y)
     }
     return false;
 }
-
-int x, y;
-int flag = (x - 1) * 15 + (y - 1);
 
 void make_state(int board[16][16])
 {
