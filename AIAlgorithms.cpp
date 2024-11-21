@@ -125,18 +125,17 @@ POINTS AIAlgorithms::seekPoints(int board[16][16], int player)
             }
         }
     }
-
     for (int i = 1; i <= 15; ++i) {
         for (int j = 1; j <= 15; ++j) {
             worth[i][j] = INT_MIN;
+            if (player == C_BLACK && B[i][j] && board[i][j] == C_NONE && isForbiddenMove(board, i, j)) {
+                B[i][j] = false;
+                std::cout << "Forbidden Move: " << i << " " << j << std::endl;
+            }
             if (board[i][j] == C_NONE && B[i][j] == true) {
-                if (player == C_BLACK && isForbiddenMove(board, i, j)) {
-                    std::cout << "发现禁手" << std::endl;
-                } else {
-                    board[i][j] = player;
-                    worth[i][j] = evaluate(board, player).score;
-                    board[i][j] = C_NONE;
-                }
+                board[i][j] = player;
+                worth[i][j] = evaluate(board, player).score;
+                board[i][j] = C_NONE;
             }
         }
     }

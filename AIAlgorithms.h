@@ -6,7 +6,7 @@
 #include "ForbiddenMove.h"
 #include "utility"
 
-const int DEPTH = 6; // 搜索深度
+const int DEPTH = 4; // 搜索深度
 const int NUM = 10; // 搜索数量
 const int KILLDEPTH = 16; // 杀棋搜索深度
 

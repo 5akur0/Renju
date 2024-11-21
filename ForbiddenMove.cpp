@@ -9,7 +9,6 @@ int flag;
 
 bool isForbiddenMove(int board[16][16], int x, int y)
 {
-    /*
     board[x][y] = C_BLACK;
     make_state(board);
     board[x][y] = C_NONE;
@@ -23,7 +22,6 @@ bool isForbiddenMove(int board[16][16], int x, int y)
     if (three_three() || four_four()) {
         return true;
     }
-    */
     return false;
 }
 
