@@ -6,57 +6,64 @@
 #include "Evaluate.h"
 
 int state[225];
-int flag;
+int preAction;
+const int currentPlayer = 1;
+const int BOARD_LEN = 15;
+
+using namespace std;
 
 bool isForbiddenMove(int board[16][16], int x, int y)
 {
     board[x][y] = C_BLACK;
     make_state(board);
     board[x][y] = C_NONE;
-    flag = (x - 1) * 15 + y - 1;
+    preAction = (x - 1) * 15 + y - 1;
     if (long_connect()) {
         return true;
     }
     if (five_connect()) {
-        std::cout << "Five Connect" << std::endl;
         return false;
     }
-    if (three_three() || four_four()) {
-        std::cout << "Three Three or Four Four" << std::endl;
+    if (three_three()) {
         return true;
     }
-    std::cout << "Not Forbidden Move" << std::endl;
+    if (four_four()) {
+        return true;
+    }
     return false;
 }
 
 void make_state(int board[16][16])
 {
-    for (int i = 0; i < 225; ++i) {
-        if (board[i / 15 + 1][i % 15 + 1] == C_BLACK) {
-            state[i] = 1;
-        } else if (board[i / 15 + 1][i % 15 + 1] == C_WHITE) {
-            state[i] = -1;
-        } else {
-            state[i] = 0;
+    for (int i = 1; i <= BOARD_LEN; ++i) {
+        for (int j = 1; j <= BOARD_LEN; ++j) {
+            int idx = (i - 1) * BOARD_LEN + (j - 1);
+            if (board[i][j] == C_BLACK) {
+                state[idx] = 1;
+            } else if (board[i][j] == C_WHITE) {
+                state[idx] = -1;
+            } else {
+                state[idx] = 0;
+            }
         }
     }
 }
 
 bool long_connect()
 {
-    int h = flag / 15;
-    int w = flag % 15;
-    int last_move = flag;
+    int h = preAction / BOARD_LEN;
+    int w = preAction % BOARD_LEN;
+    int last_move = preAction;
     int ret;
 
     int bias = std::min(w, 5);
     for (int i = last_move - bias; i < last_move + 1; i++) {
-        if (15 - 1 - i % 15 < 5) {
+        if (BOARD_LEN - 1 - i % BOARD_LEN < 5) {
             break;
         }
         ret = 0;
         for (int k = i; k < i + 6; k++) {
-            if (state[k] != 1) {
+            if (state[k] != (currentPlayer ^ 1)) {
                 ret = 1;
                 break;
             }
@@ -65,13 +72,13 @@ bool long_connect()
             return true;
     }
     bias = std::min(h, 5);
-    for (int i = last_move - bias * 15; i < last_move + 15; i += 15) {
-        if (15 - 1 - i / 15 < 5) {
+    for (int i = last_move - bias * BOARD_LEN; i < last_move + BOARD_LEN; i += BOARD_LEN) {
+        if (BOARD_LEN - 1 - i / BOARD_LEN < 5) {
             break;
         }
         ret = 0;
-        for (int k = i; k < i + 6 * 15; k += 15) {
-            if (state[k] != 1) {
+        for (int k = i; k < i + 6 * BOARD_LEN; k += BOARD_LEN) {
+            if (state[k] != (currentPlayer ^ 1)) {
                 ret = 1;
                 break;
             }
@@ -80,13 +87,13 @@ bool long_connect()
             return true;
     }
     bias = std::min(std::min(h, 5), std::min(w, 5));
-    for (int i = last_move - bias * 15 - bias; i < last_move + 15 + 1; i += 15 + 1) {
-        if ((15 - 1 - i / 15 < 5) || (15 - 1 - i % 15 < 5)) {
+    for (int i = last_move - bias * BOARD_LEN - bias; i < last_move + BOARD_LEN + 1; i += BOARD_LEN + 1) {
+        if ((BOARD_LEN - 1 - i / BOARD_LEN < 5) || (BOARD_LEN - 1 - i % BOARD_LEN < 5)) {
             break;
         }
         ret = 0;
-        for (int k = i; k < i + 6 * 15 + 6; k += 15 + 1) {
-            if (state[k] != 1) {
+        for (int k = i; k < i + 6 * BOARD_LEN + 6; k += BOARD_LEN + 1) {
+            if (state[k] != (currentPlayer ^ 1)) {
                 ret = 1;
                 break;
             }
@@ -94,14 +101,14 @@ bool long_connect()
         if (ret == 0)
             return true;
     }
-    bias = std::min(std::min(15 - 1 - h, 5), std::min(w, 5));
-    for (int i = last_move + bias * 15 - bias; i > last_move - 15 + 1; i += (-(15) + 1)) {
-        if ((15 - 1 - i % 15 < 5) || (i / 15 < 5)) {
+    bias = std::min(std::min(BOARD_LEN - 1 - h, 5), std::min(w, 5));
+    for (int i = last_move + bias * BOARD_LEN - bias; i > last_move - BOARD_LEN + 1; i += (-(BOARD_LEN) + 1)) {
+        if ((BOARD_LEN - 1 - i % BOARD_LEN < 5) || (i / BOARD_LEN < 5)) {
             break;
         }
         ret = 0;
-        for (int k = i; k > i - 6 * 15 + 6; k += (-(15) + 1)) {
-            if (state[k] != 1) {
+        for (int k = i; k > i - 6 * BOARD_LEN + 6; k += (-(BOARD_LEN) + 1)) {
+            if (state[k] != (currentPlayer ^ 1)) {
                 ret = 1;
                 break;
             }
@@ -178,19 +185,19 @@ bool ff_special_case(std::string& m_str, size_t pos, int f_case)
 
 bool three_three()
 {
-    int h = flag / 15;
-    int w = flag % 15;
-    int last_move = flag;
-    int width = 15;
-    std::string jt1 = "o1o11o";
-    std::string jt2 = "o11o1o";
-    std::string ct1 = "oo111o";
-    std::string ct2 = "o111oo";
+    int h = preAction / BOARD_LEN;
+    int w = preAction % BOARD_LEN;
+    int last_move = preAction;
+    int width = BOARD_LEN;
+    string jt1 = "o1o11o";
+    string jt2 = "o11o1o";
+    string ct1 = "oo111o";
+    string ct2 = "o111oo";
     int three = 0;
-    std::string m_str;
+    string m_str;
     size_t pos;
-    int bias = std::min(w, 4);
-    for (int i = last_move - bias; i < last_move + std::min(width - 1 - w, 4) + 1; i++) {
+    int bias = min(w, 4);
+    for (int i = last_move - bias; i < last_move + min(width - 1 - w, 4) + 1; i++) {
         if (state[i] == -1) {
             m_str.append(1, 'o');
         } else if (state[i] == 0) {
@@ -218,8 +225,8 @@ bool three_three()
         return true;
 
     m_str.clear();
-    bias = std::min(h, 4);
-    for (int i = last_move - bias * width; i < last_move + width * std::min(width - 1 - h, 4) + width; i += width) {
+    bias = min(h, 4);
+    for (int i = last_move - bias * width; i < last_move + width * min(width - 1 - h, 4) + width; i += width) {
         if (state[i] == -1) {
             m_str.append(1, 'o');
         } else if (state[i] == 0) {
@@ -247,8 +254,8 @@ bool three_three()
         return true;
 
     m_str.clear();
-    bias = std::min(std::min(h, 4), std::min(w, 4));
-    for (int i = last_move - bias * width - bias; i < last_move + (width + 1) * std::min(std::min(width - 1 - h, width - 1 - w), 4) + width + 1; i += width + 1) {
+    bias = min(min(h, 4), min(w, 4));
+    for (int i = last_move - bias * width - bias; i < last_move + (width + 1) * min(min(width - 1 - h, width - 1 - w), 4) + width + 1; i += width + 1) {
         if (state[i] == -1) {
             m_str.append(1, 'o');
         } else if (state[i] == 0) {
@@ -276,8 +283,8 @@ bool three_three()
         return true;
 
     m_str.clear();
-    bias = std::min(std::min(width - 1 - w, 4), std::min(h, 4));
-    for (int i = last_move - bias * (width - 1); i < last_move + (width - 1) * std::min(std::min(width - 1 - h, std::min(w, 4)), 4) + width - 1; i += width - 1) {
+    bias = min(min(width - 1 - w, 4), min(h, 4));
+    for (int i = last_move - bias * (width - 1); i < last_move + (width - 1) * min(min(width - 1 - h, min(w, 4)), 4) + width - 1; i += width - 1) {
         if (state[i] == -1) {
             m_str.append(1, 'o');
         } else if (state[i] == 0) {
@@ -309,23 +316,23 @@ bool three_three()
 
 bool four_four()
 {
-    int h = flag / 15;
-    int w = flag % 15;
-    int last_player = 1;
-    int last_move = flag;
-    int width = 15;
+    int h = preAction / BOARD_LEN;
+    int w = preAction % BOARD_LEN;
+    int last_player = currentPlayer ^ 1;
+    int last_move = preAction;
+    int width = BOARD_LEN;
     size_t pos;
-    std::string jf1 = "111o1";
-    std::string jf2 = "1o111";
-    std::string jf3 = "11o11";
-    std::string cf1 = "o1111";
-    std::string cf2 = "1111o";
+    string jf1 = "111o1";
+    string jf2 = "1o111";
+    string jf3 = "11o11";
+    string cf1 = "o1111";
+    string cf2 = "1111o";
     int four = 0;
-    std::string m_str;
+    string m_str;
     int bias;
 
-    bias = std::min(w, 5);
-    for (int i = last_move - bias; i < last_move + std::min(width - 1 - w, 5) + 1; i++) {
+    bias = min(w, 5);
+    for (int i = last_move - bias; i < last_move + min(width - 1 - w, 5) + 1; i++) {
         if (state[i] == -1) {
             m_str.append(1, 'o');
         } else if (state[i] == 0) {
@@ -364,8 +371,8 @@ bool four_four()
         return true;
 
     m_str.clear();
-    bias = std::min(h, 5);
-    for (int i = last_move - bias * width; i < last_move + width * std::min(width - 1 - h, 5) + width; i += width) {
+    bias = min(h, 5);
+    for (int i = last_move - bias * width; i < last_move + width * min(width - 1 - h, 5) + width; i += width) {
         if (state[i] == -1) {
             m_str.append(1, 'o');
         } else if (state[i] == 0) {
@@ -404,8 +411,8 @@ bool four_four()
         return true;
 
     m_str.clear();
-    bias = std::min(std::min(h, 5), std::min(w, 5));
-    for (int i = last_move - bias * width - bias; i < last_move + (width + 1) * std::min(std::min(width - 1 - h, width - 1 - w), 5) + width + 1; i += width + 1) {
+    bias = min(min(h, 5), min(w, 5));
+    for (int i = last_move - bias * width - bias; i < last_move + (width + 1) * min(min(width - 1 - h, width - 1 - w), 5) + width + 1; i += width + 1) {
         if (state[i] == -1) {
             m_str.append(1, 'o');
         } else if (state[i] == 0) {
@@ -444,8 +451,8 @@ bool four_four()
         return true;
 
     m_str.clear();
-    bias = std::min(std::min(width - 1 - w, 5), std::min(h, 5));
-    for (int i = last_move - bias * (width - 1); i < last_move + (width - 1) * std::min(std::min(width - 1 - h, std::min(w, 5)), 5) + width - 1; i += width - 1) {
+    bias = min(min(width - 1 - w, 5), min(h, 5));
+    for (int i = last_move - bias * (width - 1); i < last_move + (width - 1) * min(min(width - 1 - h, min(w, 5)), 5) + width - 1; i += width - 1) {
         if (state[i] == -1) {
             m_str.append(1, 'o');
         } else if (state[i] == 0) {
@@ -487,17 +494,17 @@ bool four_four()
 
 bool five_connect()
 {
-    int h = flag / 15;
-    int w = flag % 15;
-    int last_player = 1;
-    int last_move = flag;
+    int h = preAction / BOARD_LEN;
+    int w = preAction % BOARD_LEN;
+    int last_player = currentPlayer ^ 1;
+    int last_move = preAction;
     int i, j;
     int ret;
-    if (flag == -1)
+    if (preAction == -1)
         return false;
-    int bias = std::min(w, 4);
+    int bias = min(w, 4);
     for (i = last_move - bias; i < last_move + 1; i++) {
-        if (15 - 1 - i % (15) < 4) {
+        if (BOARD_LEN - 1 - i % (BOARD_LEN) < 4) {
             break;
         }
         ret = 0;
@@ -512,13 +519,13 @@ bool five_connect()
             return true;
         }
     }
-    bias = std::min(h, 4);
-    for (i = last_move - bias * 15; i < last_move + 15; i += 15) {
-        if (15 - 1 - i / 15 < 4) {
+    bias = min(h, 4);
+    for (i = last_move - bias * BOARD_LEN; i < last_move + BOARD_LEN; i += BOARD_LEN) {
+        if (BOARD_LEN - 1 - i / BOARD_LEN < 4) {
             break;
         }
         ret = 0;
-        for (j = i; j < i + 5 * 15; j += 15) {
+        for (j = i; j < i + 5 * BOARD_LEN; j += BOARD_LEN) {
 
             if (state[j] != last_player) {
                 ret = 1;
@@ -529,13 +536,13 @@ bool five_connect()
             return true;
         }
     }
-    bias = std::min(std::min(h, 4), std::min(w, 4));
-    for (i = last_move - bias * 15 - bias; i < last_move + 15 + 1; i += 15 + 1) {
-        if ((15 - 1 - i / 15 < 4) || (15 - 1 - i % 15 < 4)) {
+    bias = min(min(h, 4), min(w, 4));
+    for (i = last_move - bias * BOARD_LEN - bias; i < last_move + BOARD_LEN + 1; i += BOARD_LEN + 1) {
+        if ((BOARD_LEN - 1 - i / BOARD_LEN < 4) || (BOARD_LEN - 1 - i % BOARD_LEN < 4)) {
             break;
         }
         ret = 0;
-        for (j = i; j < i + 5 * 15 + 5; j += 15 + 1) {
+        for (j = i; j < i + 5 * BOARD_LEN + 5; j += BOARD_LEN + 1) {
 
             if (state[j] != last_player) {
                 ret = 1;
@@ -546,13 +553,13 @@ bool five_connect()
             return true;
         }
     }
-    bias = std::min(std::min(15 - 1 - h, 4), std::min(w, 4));
-    for (i = last_move + bias * 15 - bias; i > last_move - 15 + 1; i = i - 15 + 1) {
-        if ((15 - 1 - i % 15 < 4) || (i / 15 < 4)) {
+    bias = std::min(std::min(BOARD_LEN - 1 - h, 4), std::min(w, 4));
+    for (i = last_move + bias * BOARD_LEN - bias; i > last_move - BOARD_LEN + 1; i = i - BOARD_LEN + 1) {
+        if ((BOARD_LEN - 1 - i % BOARD_LEN < 4) || (i / BOARD_LEN < 4)) {
             break;
         }
         ret = 0;
-        for (j = i; j > i - 5 * 15 + 5; j = j - 15 + 1) {
+        for (j = i; j > i - 5 * BOARD_LEN + 5; j = j - BOARD_LEN + 1) {
             if (state[j] != last_player) {
                 ret = 1;
                 break;

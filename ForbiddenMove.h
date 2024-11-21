@@ -13,7 +13,5 @@ bool five_connect();
 bool tt_special_case(std::string& m_str, size_t pos, int t_case);
 bool ff_special_case(std::string& m_str, size_t pos, int f_case);
 
-extern int state[225];
-extern int flag;
 
 #endif // FORBIDDENMOVE_H
