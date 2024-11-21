@@ -1,5 +1,6 @@
 #include "ForbiddenMove.h"
 #include <algorithm>
+#include <iostream>
 #include <string>
 
 #include "Evaluate.h"
@@ -17,11 +18,14 @@ bool isForbiddenMove(int board[16][16], int x, int y)
         return true;
     }
     if (five_connect()) {
+        std::cout << "Five Connect" << std::endl;
         return false;
     }
     if (three_three() || four_four()) {
+        std::cout << "Three Three or Four Four" << std::endl;
         return true;
     }
+    std::cout << "Not Forbidden Move" << std::endl;
     return false;
 }
 
