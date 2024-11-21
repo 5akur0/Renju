@@ -7,7 +7,7 @@
 class AI {
 public:
     AI();
-    void MakeMove(Board& board, int player);
+    std::pair<int, int> MakeMove(Board& board, int player);
     int GetLastMoveX() const;
     int GetLastMoveY() const;
 

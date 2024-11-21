@@ -10,10 +10,9 @@ AI::AI()
     : lastMoveX(-1)
     , lastMoveY(-1)
 {
-    std::srand(std::time(nullptr)); // 初始化随机数种子
 }
 
-void AI::MakeMove(Board& board, int player)
+std::pair<int, int> AI::MakeMove(Board& board, int player)
 {
     using namespace std;
 
@@ -33,14 +32,7 @@ void AI::MakeMove(Board& board, int player)
         lastMoveX = 8;
         lastMoveY = 8;
     }
-    board.SetCell(lastMoveX, lastMoveY, player);
-    // 结束计时，输出时间
-    auto end = chrono::high_resolution_clock::now();
-    auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
-    if (duration.count() < 200) {
-        this_thread::sleep_for(chrono::milliseconds(200) - duration);
-    }
-    cout << "AI思考时间: " << duration.count() << "毫秒" << endl;
+    return std::make_pair(lastMoveX, lastMoveY);
 }
 
 int AI::GetLastMoveX() const

@@ -21,11 +21,11 @@ void AI::MakeMove(Board& board, int player)
     auto start = chrono::high_resolution_clock::now();
 
     AIAlgorithms aiAlgorithms;
-    // if (aiAlgorithms.analysizeKill(board.board, KILLDEPTH, player)) {
-    //     cout << "AI杀棋" << endl;
-    // } else {
+    if (aiAlgorithms.analysizeKill(board.board, KILLDEPTH, player)) {
+        cout << "AI杀棋" << endl;
+    } else {
     aiAlgorithms.iterativeDeepening(board.board, player);
-    // }
+    }
     DECISION decision = aiAlgorithms.getDecision();
     lastMoveX = decision.pos.first;
     lastMoveY = decision.pos.second;
