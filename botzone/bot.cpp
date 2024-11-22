@@ -10,13 +10,12 @@ using namespace std;
 
 #define SIZE 15
 
-#define C_NONE 0 // 棋子：黑子,白子,无子
+#define C_NONE 0
 #define C_BLACK 1
 #define C_WHITE 2
 
-// 棋型代号 下标 权重
 #define OTHER 0 // 0,其他棋型不考虑
-#define WIN 1 // 1000000,白赢
+#define WIN 1 // 100000,白赢
 #define LOSE 2 //-10000000
 #define FLEX4 3 // 50000,白活4
 #define flex4 4 //-80000
@@ -32,6 +31,8 @@ using namespace std;
 #define block2 14 //-2
 #define FLEX1 15 // 1
 #define flex1 16 //-2
+
+int tuple6type[4][4][4][4][4][4];
 
 enum gameResult {
     R_DRAW,
@@ -51,8 +52,6 @@ bool long_connect();
 bool five_connect();
 bool three_three();
 bool four_four();
-
-int tuple6type[4][4][4][4][4][4];
 
 class Board {
 public:
@@ -129,10 +128,6 @@ void AIAlgorithms::iterativeDeepening(int board[16][16], int player)
 {
     for (int depth = 2; depth <= DEPTH; depth += 2) {
         alphaBeta(board, depth, INT_MIN, INT_MAX, player);
-        // 如果找到胜利走法，提前退出
-        if (decision.eval >= 1000000) {
-            return;
-        }
     }
     return;
 }
@@ -154,14 +149,6 @@ int AIAlgorithms::alphaBeta(int board[16][16], int depth, int alpha, int beta, i
             copyBoard(board, sameBoard);
             sameBoard[P.pos[i].first][P.pos[i].second] = player; // 模拟己方落子
             int a = alphaBeta(sameBoard, depth - 1, alpha, beta, 3 - player);
-            if (a >= 1000000) {
-                if (depth == DEPTH) {
-                    decision.pos.first = P.pos[i].first;
-                    decision.pos.second = P.pos[i].second;
-                    decision.eval = a;
-                }
-                return a;
-            }
             if (a > alpha) {
                 alpha = a;
                 if (depth == DEPTH) {
@@ -375,7 +362,7 @@ std::pair<int, int> AI::MakeMove(Board& board, int player)
 
 int state[225];
 int preAction;
-const int currentPlayer = 1;
+const int currentPlayer = -1;
 const int BOARD_LEN = 15;
 
 bool isForbiddenMove(int board[16][16], int x, int y)
@@ -383,7 +370,7 @@ bool isForbiddenMove(int board[16][16], int x, int y)
     board[x][y] = C_BLACK;
     make_state(board);
     board[x][y] = C_NONE;
-    preAction = (x - 1) * 15 + y - 1;
+    preAction = (x - 1) * BOARD_LEN + y - 1;
     if (long_connect()) {
         return true;
     }
@@ -404,9 +391,9 @@ void make_state(int board[16][16])
     for (int i = 1; i <= BOARD_LEN; ++i) {
         for (int j = 1; j <= BOARD_LEN; ++j) {
             int idx = (i - 1) * BOARD_LEN + (j - 1);
-            if (board[i][j] == 1) {
+            if (board[i][j] == C_BLACK) {
                 state[idx] = 1;
-            } else if (board[i][j] == 2) {
+            } else if (board[i][j] == C_WHITE) {
                 state[idx] = -1;
             } else {
                 state[idx] = 0;
