@@ -380,24 +380,23 @@ const int BOARD_LEN = 15;
 
 bool isForbiddenMove(int board[16][16], int x, int y)
 {
+    board[x][y] = C_BLACK;
+    make_state(board);
+    board[x][y] = C_NONE;
+    preAction = (x - 1) * 15 + y - 1;
+    if (long_connect()) {
+        return true;
+    }
+    if (five_connect()) {
+        return false;
+    }
+    if (three_three()) {
+        return true;
+    }
+    if (four_four()) {
+        return true;
+    }
     return false;
-    // board[x][y] = C_BLACK;
-    // make_state(board);
-    // board[x][y] = C_NONE;
-    // preAction = (x - 1) * 15 + y - 1;
-    // if (long_connect()) {
-    //     return true;
-    // }
-    // if (five_connect()) {
-    //     return false;
-    // }
-    // if (three_three()) {
-    //     return true;
-    // }
-    // if (four_four()) {
-    //     return true;
-    // }
-    // return false;
 }
 
 void make_state(int board[16][16])
