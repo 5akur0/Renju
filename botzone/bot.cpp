@@ -69,6 +69,12 @@ public:
         lastMoveY = y;
     }
 
+public:
+    void init()
+    {
+        memset(board, 0, sizeof(board));
+    }
+
 private:
     int lastMoveX;
     int lastMoveY;
@@ -217,7 +223,6 @@ POINTS AIAlgorithms::seekPoints(int board[16][16], int player)
             worth[i][j] = INT_MIN;
             if (player == C_BLACK && B[i][j] && board[i][j] == C_NONE && isForbiddenMove(board, i, j)) {
                 B[i][j] = false;
-                std::cout << "Forbidden Move: " << i << " " << j << std::endl;
             }
             if (board[i][j] == C_NONE && B[i][j] == true) {
                 board[i][j] = player;
@@ -1149,78 +1154,57 @@ void init_tuple6type()
 
 int main()
 {
-    // 读取JSON输入
-    std::string str;
-    getline(std::cin, str);
-    Json::Reader reader;
-    Json::Value input;
-    reader.parse(str, input);
+    // set parameters
+    int turnID = 0;
+    int tmppp = 0;
+    int oppoColor = C_WHITE;
+    int myColor = C_BLACK;
 
-    // 初始化 AI 和棋盘
+    // initialize
+    init_tuple6type();
     AI ai;
     Board board;
+    board.init();
 
-    int turnID = input["responses"].size();
+    while (true) {
+        string str;
+        getline(cin, str);
+        Json::Reader reader;
+        Json::Value input;
+        reader.parse(str, input);
 
-    if (turnID == 0 && input["requests"][Json::Value::ArrayIndex(0)]["x"].asInt() == -1 && input["requests"][Json::Value::ArrayIndex(0)]["y"].asInt() == -1) {
-        // AI 先手，假设 AI 为黑棋
-
-        // AI 下棋
-        std::pair<int, int> move = ai.MakeMove(board, C_BLACK);
-        int x = move.first - 1;
-        int y = move.second - 1;
-
-        // 更新棋盘状态
-        board.SetCell(x + 1, y + 1, C_BLACK);
-
-        // 输出决策JSON
-        Json::Value ret;
-        Json::Value action;
-        action["x"] = x;
-        action["y"] = y;
-        ret["response"] = action;
-
-        Json::FastWriter writer;
-        std::cout << writer.write(ret) << std::endl;
-    } else {
-        // AI 后手，假设玩家为黑棋，AI 为白棋
-        // 恢复棋盘状态
-        for (int i = 0; i < turnID; i++) {
-            int reqX = input["requests"][Json::Value::ArrayIndex(i)]["x"].asInt();
-            int reqY = input["requests"][Json::Value::ArrayIndex(i)]["y"].asInt();
-            int resX = input["responses"][Json::Value::ArrayIndex(i)]["x"].asInt();
-            int resY = input["responses"][Json::Value::ArrayIndex(i)]["y"].asInt();
-            if (reqX >= 0 && reqY >= 0) {
-                board.SetCell(reqX + 1, reqY + 1, C_BLACK); // 玩家落子
-            }
-            if (resX >= 0 && resY >= 0) {
-                board.SetCell(resX + 1, resY + 1, C_WHITE); // AI 落子
-            }
+        int xx, yy;
+        if (turnID == 0) {
+            xx = input["requests"][tmppp]["x"].asInt();
+            yy = input["requests"][tmppp]["y"].asInt();
         }
-        int lastReqX = input["requests"][Json::Value::ArrayIndex(turnID)]["x"].asInt();
-        int lastReqY = input["requests"][Json::Value::ArrayIndex(turnID)]["y"].asInt();
-        if (lastReqX >= 0 && lastReqY >= 0) {
-            board.SetCell(lastReqX + 1, lastReqY + 1, C_BLACK); // 玩家最后一手
+        else {
+            xx = input["x"].asInt();
+            yy = input["y"].asInt();
         }
 
-        // AI 下棋
-        std::pair<int, int> move = ai.MakeMove(board, C_WHITE);
-        int x = move.first - 1;
-        int y = move.second - 1;
+        if (turnID == 0 && xx != -1) {
+            oppoColor = C_BLACK;
+            myColor = C_WHITE;
+        }
+        turnID++;
 
-        // 更新棋盘状态
-        board.SetCell(x + 1, y + 1, C_WHITE);
+        //update board
+        board.SetCell(xx, yy, oppoColor);
 
-        // 输出决策JSON
-        Json::Value ret;
+        //make move
+        pair<int, int> move = ai.MakeMove(board, myColor);
+        board.SetCell(move.first, move.second, myColor);
+
         Json::Value action;
-        action["x"] = x;
-        action["y"] = y;
+        action["x"] = move.first - 1;
+        action["y"] = move.second - 1; 
+        Json::Value ret;
         ret["response"] = action;
-
         Json::FastWriter writer;
-        std::cout << writer.write(ret) << std::endl;
+        cout << writer.write(ret) << endl;
+        cout << ">>>BOTZONE_REQUEST_KEEP_RUNNING<<<" << endl;
+        fflush(stdout);
     }
-
     return 0;
 }
