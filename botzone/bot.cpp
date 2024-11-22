@@ -1149,56 +1149,78 @@ void init_tuple6type()
 
 int main()
 {
-    // 读入JSON
+    // 读取JSON输入
     std::string str;
     getline(std::cin, str);
     Json::Reader reader;
     Json::Value input;
     reader.parse(str, input);
 
-    // 分析自己收到的输入和自己过往的输出，并恢复状态
-    int turnID = input["responses"].size();
-    Board board;
-    for (int i = 0; i < turnID; i++) {
-        int reqX = input["requests"][i]["x"].asInt();
-        int reqY = input["requests"][i]["y"].asInt();
-        int resX = input["responses"][i]["x"].asInt();
-        int resY = input["responses"][i]["y"].asInt();
-        if (reqX >= 0 && reqY >= 0) {
-            board.SetCell(reqX + 1, reqY + 1, C_WHITE); // 假设玩家为白棋
-        }
-        if (resX >= 0 && resY >= 0) {
-            board.SetCell(resX + 1, resY + 1, C_BLACK); // 假设 AI 为黑棋
-        }
-    }
-    int lastReqX = input["requests"][turnID]["x"].asInt();
-    int lastReqY = input["requests"][turnID]["y"].asInt();
-    if (lastReqX >= 0 && lastReqY >= 0) {
-        board.SetCell(lastReqX + 1, lastReqY + 1, C_WHITE); // 假设玩家为白棋
-    }
-
-    // 初始化 AI
+    // 初始化 AI 和棋盘
     AI ai;
+    Board board;
 
-    // AI 下棋
-    std::pair<int, int> move = ai.MakeMove(board, C_BLACK); // 假设 AI 为黑棋
+    int turnID = input["responses"].size();
 
-    // 获取 AI 的落子位置
-    int x = move.first - 1; // Adjust index if needed
-    int y = move.second - 1;
+    if (turnID == 0 && input["requests"][Json::Value::ArrayIndex(0)]["x"].asInt() == -1 && input["requests"][Json::Value::ArrayIndex(0)]["y"].asInt() == -1) {
+        // AI 先手，假设 AI 为黑棋
 
-    // 更新棋盘状态
-    board.SetCell(x + 1, y + 1, C_BLACK);
+        // AI 下棋
+        std::pair<int, int> move = ai.MakeMove(board, C_BLACK);
+        int x = move.first - 1;
+        int y = move.second - 1;
 
-    // 输出决策JSON
-    Json::Value ret;
-    Json::Value action;
-    action["x"] = x;
-    action["y"] = y;
-    ret["response"] = action;
+        // 更新棋盘状态
+        board.SetCell(x + 1, y + 1, C_BLACK);
 
-    Json::FastWriter writer;
-    std::cout << writer.write(ret) << std::endl;
+        // 输出决策JSON
+        Json::Value ret;
+        Json::Value action;
+        action["x"] = x;
+        action["y"] = y;
+        ret["response"] = action;
+
+        Json::FastWriter writer;
+        std::cout << writer.write(ret) << std::endl;
+    } else {
+        // AI 后手，假设玩家为黑棋，AI 为白棋
+        // 恢复棋盘状态
+        for (int i = 0; i < turnID; i++) {
+            int reqX = input["requests"][Json::Value::ArrayIndex(i)]["x"].asInt();
+            int reqY = input["requests"][Json::Value::ArrayIndex(i)]["y"].asInt();
+            int resX = input["responses"][Json::Value::ArrayIndex(i)]["x"].asInt();
+            int resY = input["responses"][Json::Value::ArrayIndex(i)]["y"].asInt();
+            if (reqX >= 0 && reqY >= 0) {
+                board.SetCell(reqX + 1, reqY + 1, C_BLACK); // 玩家落子
+            }
+            if (resX >= 0 && resY >= 0) {
+                board.SetCell(resX + 1, resY + 1, C_WHITE); // AI 落子
+            }
+        }
+        int lastReqX = input["requests"][Json::Value::ArrayIndex(turnID)]["x"].asInt();
+        int lastReqY = input["requests"][Json::Value::ArrayIndex(turnID)]["y"].asInt();
+        if (lastReqX >= 0 && lastReqY >= 0) {
+            board.SetCell(lastReqX + 1, lastReqY + 1, C_BLACK); // 玩家最后一手
+        }
+
+        // AI 下棋
+        std::pair<int, int> move = ai.MakeMove(board, C_WHITE);
+        int x = move.first - 1;
+        int y = move.second - 1;
+
+        // 更新棋盘状态
+        board.SetCell(x + 1, y + 1, C_WHITE);
+
+        // 输出决策JSON
+        Json::Value ret;
+        Json::Value action;
+        action["x"] = x;
+        action["y"] = y;
+        ret["response"] = action;
+
+        Json::FastWriter writer;
+        std::cout << writer.write(ret) << std::endl;
+    }
 
     return 0;
 }
