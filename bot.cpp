@@ -1,12 +1,16 @@
+#include "jsoncpp/json.h"
 #include <bits/stdc++.h>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <iostream>
 #include <vector>
-#include "jsoncpp/json.h"
 
 using namespace std;
+
+const int DEPTH = 4; // 搜索深度
+const int NUM = 20; // 搜索数量
+const int KILLDEPTH = 16; // 杀棋搜索深度
 
 #define SIZE 15
 
@@ -77,10 +81,6 @@ private:
     int lastMoveY;
 };
 
-const int DEPTH = 4; // 搜索深度
-const int NUM = 10; // 搜索数量
-const int KILLDEPTH = 16; // 杀棋搜索深度
-
 struct POINTS {
     std::pair<int, int> pos[NUM];
     int score[NUM];
@@ -97,8 +97,11 @@ public:
     int alphaBeta(int board[16][16], int depth, int alpha, int beta, int player);
     POINTS seekPoints(int board[16][16], int player);
     EVALUATION evaluate(int board[16][16], int player);
-    DECISION getDecision() const
-    {
+
+    std::vector<std::pair<int, int>> seekKill(int board[16][16], int player);
+    bool analysizeKill(int board[16][16], int depth, int player);
+
+    DECISION getDecision() const {
         return decision;
     }
 
@@ -181,12 +184,12 @@ int AIAlgorithms::alphaBeta(int board[16][16], int depth, int alpha, int beta, i
 
 POINTS AIAlgorithms::seekPoints(int board[16][16], int player)
 {
-    bool B[16][16]; // 局部搜索标记数组
+    bool B[16][16];
     int worth[16][16];
-    POINTS best_points;
+    POINTS ret;
 
     memset(B, 0, sizeof(B));
-    for (int i = 1; i <= 15; ++i) { // 每个非空点附近8个方向延伸3个深度,若不越界则标记为可走
+    for (int i = 1; i <= 15; ++i) { // 每个非空点附近8个方向延伸3个深度
         for (int j = 1; j <= 15; ++j) {
             if (board[i][j] != C_NONE) {
                 for (int k = -3; k <= 3; ++k) {
@@ -209,7 +212,7 @@ POINTS AIAlgorithms::seekPoints(int board[16][16], int player)
             if (player == C_BLACK && B[i][j] && board[i][j] == C_NONE && isForbiddenMove(board, i, j)) {
                 B[i][j] = false;
             }
-            if (board[i][j] == C_NONE && B[i][j] == true) {
+            if (board[i][j] == C_NONE && B[i][j]) {
                 board[i][j] = player;
                 worth[i][j] = evaluate(board, player).score;
                 board[i][j] = C_NONE;
@@ -225,25 +228,101 @@ POINTS AIAlgorithms::seekPoints(int board[16][16], int player)
                 if (worth[i][j] > w) {
                     w = worth[i][j];
                     std::pair<int, int> tmp(i, j);
-                    best_points.pos[k] = tmp;
+                    ret.pos[k] = tmp;
                 }
             }
         }
-        board[best_points.pos[k].first][best_points.pos[k].second] = player;
-        best_points.score[k] = evaluate(board, player).score;
-        board[best_points.pos[k].first][best_points.pos[k].second] = C_NONE;
-        worth[best_points.pos[k].first][best_points.pos[k].second] = INT_MIN; // 清除掉上一点,计算下一点的位置和分数
+        board[ret.pos[k].first][ret.pos[k].second] = player;
+        ret.score[k] = evaluate(board, player).score;
+        board[ret.pos[k].first][ret.pos[k].second] = C_NONE;
+        worth[ret.pos[k].first][ret.pos[k].second] = INT_MIN; // 清除掉上一点,计算下一点的位置和分数
     }
-    return best_points;
+    return ret;
+}
+
+std::vector<std::pair<int, int>> AIAlgorithms::seekKill(int board[16][16], int player)
+{
+    std::vector<std::pair<int, int>> ret;
+    POINTS P = seekPoints(board, player);
+    int sameBoard[16][16];
+    copyBoard(board, sameBoard);
+
+    for (int i = 0; i < NUM; ++i) {
+        sameBoard[P.pos[i].first][P.pos[i].second] = player;
+        if (evaluate(sameBoard, player).STAT[WIN] > 0) {
+            ret.push_back(P.pos[i]);
+        } else if (evaluate(sameBoard, player).STAT[FLEX4] > evaluate(board, player).STAT[FLEX4]) {
+            ret.push_back(P.pos[i]);
+        } else if (evaluate(sameBoard, player).STAT[BLOCK4] > evaluate(board, player).STAT[BLOCK4]) {
+            ret.push_back(P.pos[i]);
+        } else if (evaluate(sameBoard, player).STAT[FLEX3] > evaluate(board, player).STAT[FLEX3]) {
+            ret.push_back(P.pos[i]);
+        }
+        sameBoard[P.pos[i].first][P.pos[i].second] = C_NONE;
+    }
+    return ret;
+}
+
+bool AIAlgorithms::analysizeKill(int board[16][16], int depth, int player)
+{
+    EVALUATION eval = evaluate(board, player);
+    if (depth == 0) {
+        POINTS P = seekPoints(board, player);
+        board[P.pos[0].first][P.pos[0].second] = player;
+        gameResult RESULT = evaluate(board, player).result;
+        if ((RESULT == R_WHITE && player == C_WHITE) || (RESULT == R_BLACK && player == C_BLACK)) {
+            return true;
+        }
+        return false;
+    }
+    if ((eval.result == R_WHITE && player == C_WHITE) || (eval.result == R_BLACK && player == C_BLACK)) {
+        return true;
+    }
+    if ((eval.result == R_WHITE && player == C_BLACK) || (eval.result == R_BLACK && player == C_WHITE)) {
+        return false;
+    }
+    if (depth % 2 == 0) { // 我方决策
+        if (depth == KILLDEPTH || depth == KILLDEPTH - 2) {
+            POINTS P = seekPoints(board, player);
+            for (int i = 0; i < NUM; ++i) {
+                int sameBoard[16][16];
+                copyBoard(board, sameBoard);
+                sameBoard[P.pos[i].first][P.pos[i].second] = player;
+                if (analysizeKill(sameBoard, depth - 1, player)) {
+                    if (depth == KILLDEPTH) {
+                        decision.pos.first = P.pos[i].first;
+                        decision.pos.second = P.pos[i].second;
+                        decision.eval = INT_MAX;
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+        std::vector<std::pair<int, int>> kill = seekKill(board, player);
+        if (kill.size() == 0) {
+            return false;
+        }
+        for (auto k : kill) {
+            int sameBoard[16][16];
+            copyBoard(board, sameBoard);
+            sameBoard[k.first][k.second] = player;
+            if (analysizeKill(sameBoard, depth - 1, player)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    // 敌方决策，选择最好的位置
+    POINTS PP = seekPoints(board, 3 - player);
+    int sameBoard[16][16];
+    copyBoard(board, sameBoard);
+    sameBoard[PP.pos[0].first][PP.pos[0].second] = 3 - player;
+    return analysizeKill(sameBoard, depth - 1, player);
 }
 
 EVALUATION AIAlgorithms::evaluate(int board[16][16], int player)
 {
-    int rboard[16][16];
-    copyBoard(board, rboard);
-    if (player == C_BLACK) {
-        reverseBoard(board, rboard);
-    }
     // 各棋型权重
     int weight[17] = { 0, 1000000, -10000000, 50000, -100000, 400, -100000, 400, -8000, 20, -50, 20, -50, 1, -3, 1, -3 };
 
@@ -255,17 +334,33 @@ EVALUATION AIAlgorithms::evaluate(int board[16][16], int player)
     memset(STAT, 0, sizeof(STAT));
 
     int A[17][17]; // 包括边界的虚拟大棋盘,3表示边界
-    for (int i = 0; i < 17; ++i)
+    for (int i = 0; i < 17; ++i) {
         A[i][0] = 3;
-    for (int i = 0; i < 17; ++i)
+    }
+    for (int i = 0; i < 17; ++i) {
         A[i][16] = 3;
-    for (int j = 0; j < 17; ++j)
+    }
+    for (int j = 0; j < 17; ++j) {
         A[0][j] = 3;
-    for (int j = 0; j < 17; ++j)
+    }
+    for (int j = 0; j < 17; ++j) {
         A[16][j] = 3;
-    for (int i = 1; i <= 15; ++i)
-        for (int j = 1; j <= 15; ++j)
-            A[i][j] = rboard[i][j];
+    }
+    for (int i = 1; i <= 15; ++i) {
+        for (int j = 1; j <= 15; ++j) {
+            if (player == C_WHITE) {
+                A[i][j] = board[i][j];
+            }
+            else {
+                if (board[i][j] == C_NONE) {
+                    A[i][j] = C_NONE;
+                }
+                else {
+                    A[i][j] = C_WHITE + C_BLACK - board[i][j];
+                }
+            }
+        }
+    }
 
     // 判断横向棋型
     for (i = 1; i <= 15; ++i) {
@@ -349,7 +444,9 @@ std::pair<int, int> AI::MakeMove(Board& board, int player)
 {
     using namespace std;
     AIAlgorithms aiAlgorithms;
-    aiAlgorithms.iterativeDeepening(board.board, player);
+    if (!aiAlgorithms.analysizeKill(board.board, KILLDEPTH, player)) {
+        aiAlgorithms.iterativeDeepening(board.board, player);
+    }
     DECISION decision = aiAlgorithms.getDecision();
     lastMoveX = decision.pos.first;
     lastMoveY = decision.pos.second;
@@ -1162,8 +1259,7 @@ int main()
         if (turnID == 0) {
             xx = input["requests"][tmppp]["x"].asInt();
             yy = input["requests"][tmppp]["y"].asInt();
-        }
-        else {
+        } else {
             xx = input["x"].asInt();
             yy = input["y"].asInt();
         }
@@ -1174,16 +1270,16 @@ int main()
         }
         turnID++;
 
-        //update board
+        // update board
         board.SetCell(xx + 1, yy + 1, oppoColor);
 
-        //make move
+        // make move
         pair<int, int> move = ai.MakeMove(board, myColor);
         board.SetCell(move.first, move.second, myColor);
 
         Json::Value action;
         action["x"] = move.first - 1;
-        action["y"] = move.second - 1; 
+        action["y"] = move.second - 1;
         Json::Value ret;
         ret["response"] = action;
         Json::FastWriter writer;
