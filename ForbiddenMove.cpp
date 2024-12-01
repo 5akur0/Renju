@@ -7,7 +7,7 @@
 
 int state[225];
 int preAction;
-const int currentPlayer = 1;
+const int currentPlayer = 0;
 const int BOARD_LEN = 15;
 
 using namespace std;
@@ -41,9 +41,9 @@ void make_state(int board[16][16])
             if (board[i][j] == C_BLACK) {
                 state[idx] = 1;
             } else if (board[i][j] == C_WHITE) {
-                state[idx] = -1;
-            } else {
                 state[idx] = 0;
+            } else {
+                state[idx] = -1;
             }
         }
     }
