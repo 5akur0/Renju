@@ -2,10 +2,6 @@
 #include <SDL.h>
 #include <vector>
 
-static const int BOARD_SIZE = 15;
-static const int CELL_SIZE = 40;
-static const int MARGIN = 50;
-
 void DrawBoard(SDL_Renderer* renderer, const std::vector<std::vector<int>>& board)
 {
     // 绘制网格
@@ -78,8 +74,8 @@ void RunGameUI()
                     int y = event.button.y - MARGIN;
 
                     if (x >= 0 && y >= 0) {
-                        int col = x / CELL_SIZE;
-                        int row = y / CELL_SIZE;
+                        int col = (x + CELL_SIZE / 2) / CELL_SIZE;
+                        int row = (y + CELL_SIZE / 2) / CELL_SIZE;
                         if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE) {
                             if (board[row][col] == 0) {
                                 board[row][col] = isBlackTurn ? 1 : 2;

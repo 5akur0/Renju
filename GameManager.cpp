@@ -1,5 +1,6 @@
 #include "GameManager.h"
 
+#include <SDL.h>
 #include <cctype>
 #include <cstdio>
 #include <filesystem>
@@ -10,7 +11,12 @@
 namespace fs = std::__fs::filesystem;
 using namespace std;
 
-GameManager::GameManager() : board(), ai(), moveCount(0), saveFolder("存档") {
+GameManager::GameManager()
+    : board()
+    , ai()
+    , moveCount(0)
+    , saveFolder("存档")
+{
     fs::create_directory(saveFolder);
 }
 
@@ -20,215 +26,44 @@ void GameManager::NewGame()
     moveCount = 0; // 初始化步数
     lastMoveX = -1;
     lastMoveY = -1;
-    char choice;
-    while (true) {
-        cout << "你想要先手吗？(y/n): ";
-        cin >> choice;
-        if (choice == 'y' || choice == 'Y') {
-            PlayerColor = C_BLACK;
-            AIColor = C_WHITE;
-            break;
-        } else if (choice == 'n' || choice == 'N') {
-            PlayerColor = C_WHITE;
-            AIColor = C_BLACK;
-            moveCount = 1; // AI先手
-            break;
-        } else {
-            cout << "无效的选择，请输入 'y' 或 'n'。" << endl;
-        }
-    }
-    board.Print();
-    PlayGame();
-}
+    bool isBlackTurn = true;
+    SDL_Event event;
+    bool running = true;
 
-void GameManager::PlayGame()
-{
-    int x, y;
-    while (true) {
-        if (moveCount % 2 == 0) { // 玩家回合
-            if (!GetPlayerMove(x, y)) {
-                continue;
-            }
-            if (x == -1 && y == -1) {
-                PromptSaveAndQuit();
-                return;
-            }
-            board.SetCell(x, y, PlayerColor);
-            lastMoveX = x;
-            lastMoveY = y;
-        } else { // AI回合
-            ai.MakeMove(board, AIColor);
-            lastMoveX = ai.GetLastMoveX();
-            lastMoveY = ai.GetLastMoveY();
-        }
-        moveCount++; // 更新步数
-        board.SetLastMove(lastMoveX, lastMoveY);
-        board.Print();
-        // 检查胜利条件
-        if (CheckWin()) {
-            if (moveCount % 2 == 1) {
-                printf("游戏结束，玩家胜利！\n");
-            } else {
-                printf("游戏结束，AI胜利！\n");
-            }
-            break;
-        }
-        // 检查是否平局
-        if (IsBoardFull()) {
-            printf("棋盘已满，平局！\n");
-            break;
-        }
-    }
-}
+    while (running) {
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                running = false;
+            } else if (event.type == SDL_MOUSEBUTTONDOWN) {
+                if (event.button.button == SDL_BUTTON_LEFT) {
+                    int x = event.button.x - MARGIN;
+                    int y = event.button.y - MARGIN;
 
-bool GameManager::GetPlayerMove(int& x, int& y)
-{
-    printf("请输入你的落子位置（格式：数字字母，例如6a，输入q退出）：");
-    string input;
-    cin >> input;
-    // 检查输入是否为退出命令
-    if (input == "q") {
-        x = -1;
-        y = -1;
-        return true;
-    }
-    // 检查输入格式是否正确
-    if (input.length() < 2 || !isalpha(input.back())) {
-        printf("无效的输入格式，请重新输入。\n");
-        return false;
-    }
-    // 解析输入
-    size_t pos = 0;
-    while (pos < input.length() && isdigit(input[pos])) {
-        pos++;
-    }
-    if (pos == 0 || pos == input.length()) {
-        printf("无效的输入格式，请重新输入。\n");
-        return false;
-    }
-    x = stoi(input.substr(0, pos));
-    char col = input[pos];
-    y = board.ToIndex(col); // 使用 Board::ToIndex 将字母转换为列号
-    if (x < 1 || x > 15 || y < 1 || y > 15 || board.GetCell(x, y) != 0) {
-        printf("无效的位置，请重新输入。\n");
-        return false;
-    }
-    return true;
-}
-
-bool GameManager::IsBoardFull()
-{
-    for (int i = 1; i <= 15; ++i) {
-        for (int j = 1; j <= 15; ++j) {
-            if (board.GetCell(i, j) == C_NONE) {
-                return false;
+                    if (x >= 0 && y >= 0) {
+                        int col = x / CELL_SIZE;
+                        int row = y / CELL_SIZE;
+                        if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE) {
+                            if (board.GetCell(row + 1, col + 1) == 0) {
+                                board.SetCell(row + 1, col + 1, isBlackTurn ? C_BLACK : C_WHITE);
+                                lastMoveX = row + 1;
+                                lastMoveY = col + 1;
+                                isBlackTurn = !isBlackTurn;
+                                moveCount++;
+                                board.SetLastMove(lastMoveX, lastMoveY);
+                                if (CheckWin()) {
+                                    running = false;
+                                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "游戏结束", isBlackTurn ? "白方胜利！" : "黑方胜利！", NULL);
+                                } else if (IsBoardFull()) {
+                                    running = false;
+                                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "游戏结束", "平局！", NULL);
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
-    return true;
-}
-
-void GameManager::SaveGame() {
-    char filename[100];
-    while (true) {
-        printf("请输入要保存的文件名（例如：savegame.txt）：");
-        scanf("%s", filename);
-        if (strlen(filename) > 4 && strcmp(filename + strlen(filename) - 4, ".txt") == 0) {
-            break;
-        } else {
-            printf("文件名必须以 .txt 结尾。\n");
-        }
-    }
-    std::string filepath = saveFolder + "/" + filename;
-    FILE *file = fopen(filepath.c_str(), "w");
-    if (file == NULL) {
-        printf("无法打开文件进行存盘。\n");
-        return;
-    }
-    fprintf(file, "%d\n", moveCount); // 保存当前步数
-    fprintf(file, "%d %d\n", lastMoveX, lastMoveY); // 保存最后一次落子的坐标
-    fprintf(file, "%d %d\n", PlayerColor, AIColor); // 保存玩家和AI的颜色
-    for (int i = 1; i <= 15; i++) {
-        for (int j = 1; j <= 15; j++) {
-            fprintf(file, "%d ", board.GetCell(i, j));
-        }
-        fprintf(file, "\n");
-    }
-    fclose(file);
-    printf("游戏已保存到文件 %s。\n", filepath.c_str());
-}
-
-void GameManager::LoadGame() {
-    char filename[100];
-    FILE *file = nullptr;
-    while (true) {
-        printf("请输入要读取的文件名（例如：savegame.txt），或输入 'q' 退出：");
-        scanf("%s", filename);
-        if (strcmp(filename, "q") == 0) {
-            printf("取消读盘操作。\n");
-            return;
-        }
-        if (strlen(filename) > 4 && strcmp(filename + strlen(filename) - 4, ".txt") == 0) {
-            std::string filepath = saveFolder + "/" + filename;
-            file = fopen(filepath.c_str(), "r");
-            if (file != NULL) {
-                break;
-            } else {
-                printf("无法打开文件 %s 进行读盘。\n", filepath.c_str());
-            }
-        } else {
-            printf("文件名必须以 .txt 结尾。\n");
-        }
-    }
-    fscanf(file, "%d", &moveCount); // 读取当前步数
-    fscanf(file, "%d %d", &lastMoveX, &lastMoveY); // 读取最后一次落子的坐标
-    fscanf(file, "%d %d", &PlayerColor, &AIColor); // 读取玩家和AI的颜色
-    for (int i = 1; i <= 15; i++) {
-        for (int j = 1; j <= 15; j++) {
-            int value;
-            fscanf(file, "%d", &value);
-            board.SetCell(i, j, value);
-        }
-    }
-    fclose(file);
-    printf("游戏已从文件 %s 读入。\n", filename);
-    board.Print();
-
-    // 检查游戏是否已经结束
-    if (CheckWin()) {
-        printf("游戏已经结束，%s 胜利！\n", (moveCount % 2 == 1) ? "玩家" : "AI");
-        return;
-    }
-    if (IsBoardFull()) {
-        printf("棋盘已满，平局！\n");
-        return;
-    }
-
-    PlayGame(); // 继续游戏
-}
-
-void GameManager::ClearAllSaves() {
-    for (const auto& entry : fs::directory_iterator(saveFolder)) {
-        fs::remove(entry.path());
-    }
-    printf("所有存档文件已删除。\n");
-}
-
-void GameManager::QuitGame()
-{
-    printf("程序退出。\n");
-    exit(0);
-}
-
-void GameManager::PromptSaveAndQuit()
-{
-    char choice;
-    printf("是否保存游戏进度？(y/n)：");
-    cin >> choice;
-    if (choice == 'y' || choice == 'Y') {
-        SaveGame();
-    }
-    QuitGame();
 }
 
 bool GameManager::CheckWin()
@@ -265,4 +100,42 @@ bool GameManager::CheckDirection(int x, int y, int dx, int dy, int player)
         count++;
     }
     return count >= 5;
+}
+
+bool GameManager::IsBoardFull()
+{
+    for (int i = 1; i <= 15; ++i) {
+        for (int j = 1; j <= 15; ++j) {
+            if (board.GetCell(i, j) == C_NONE) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+void GameManager::SaveGame()
+{
+    // 保存游戏的实现
+}
+
+void GameManager::LoadGame()
+{
+    // 读取游戏的实现
+}
+
+void GameManager::ClearAllSaves()
+{
+    // 清除所有存档的实现
+}
+
+void GameManager::QuitGame()
+{
+    printf("程序退出。\n");
+    exit(0);
+}
+
+void GameManager::PromptSaveAndQuit()
+{
+    // 提示保存并退出的实现
 }

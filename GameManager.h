@@ -5,30 +5,30 @@
 #include "Board.h"
 #include <string>
 
+const int BOARD_SIZE = 15;
+const int CELL_SIZE = 40;
+const int MARGIN = 50;
+
 class GameManager {
 public:
     GameManager();
     void NewGame();
+    bool CheckWin();
+    bool CheckDirection(int x, int y, int dx, int dy, int player);
+    bool IsBoardFull();
     void SaveGame();
     void LoadGame();
     void ClearAllSaves();
     void QuitGame();
+    void PromptSaveAndQuit();
 
 private:
     Board board;
     AI ai;
-    std::string saveFolder;
     int moveCount;
     int lastMoveX;
     int lastMoveY;
-    void PlayGame();
-    bool CheckWin();
-    bool IsBoardFull();
-    bool GetPlayerMove(int& x, int& y);
-    void PromptSaveAndQuit();
-    bool CheckDirection(int x, int y, int dx, int dy, int player);
-    int PlayerColor;
-    int AIColor;
+    std::string saveFolder;
 };
 
 #endif // GAMEMANAGER_H
