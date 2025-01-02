@@ -9,7 +9,7 @@
 using namespace std;
 
 const int DEPTH = 4; // 搜索深度
-const int NUM = 20; // 搜索数量
+const int NUM = 10; // 搜索数量
 const int KILLDEPTH = 16; // 杀棋搜索深度
 
 #define SIZE 15
@@ -167,7 +167,7 @@ int AIAlgorithms::alphaBeta(int board[16][16], int depth, int alpha, int beta, i
     } else { // min层,敌方决策
         int rBoard[16][16];
         reverseBoard(board, rBoard);
-        POINTS P = seekPoints(rBoard, 3 - player); // 找对于敌方的最佳位置,需要将棋盘不同颜色反转
+        POINTS P = seekPoints(rBoard, 3 - player);
         for (int i = 0; i < NUM; ++i) {
             int sameBoard[16][16];
             copyBoard(board, sameBoard);
@@ -444,9 +444,10 @@ std::pair<int, int> AI::MakeMove(Board& board, int player)
 {
     using namespace std;
     AIAlgorithms aiAlgorithms;
-    if (!aiAlgorithms.analysizeKill(board.board, KILLDEPTH, player)) {
-        aiAlgorithms.iterativeDeepening(board.board, player);
-    }
+    // if (!aiAlgorithms.analysizeKill(board.board, KILLDEPTH, player)) {
+    //     aiAlgorithms.iterativeDeepening(board.board, player);
+    // }
+    aiAlgorithms.iterativeDeepening(board.board, player);
     DECISION decision = aiAlgorithms.getDecision();
     lastMoveX = decision.pos.first;
     lastMoveY = decision.pos.second;
