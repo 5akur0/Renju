@@ -1,15 +1,14 @@
 # 定义编译器
 CXX = g++
-CXXFLAGS = -std=c++1z -O2 -Wall
-LDFLAGS = -L/usr/local/lib -lsfml-graphics -lsfml-window -lsfml-system -ljsoncpp -lpthread
+CXXFLAGS = -std=c++1z -O2 -Wall -I/opt/homebrew/include/SDL2
+LDFLAGS = -L/opt/homebrew/lib -lSDL2 -ljsoncpp -lpthread
 
 # 定义目标文件
 TARGET = renju
 # 定义源文件
-SRCS = main.cpp AI.cpp AIAlgorithms.cpp Board.cpp Evaluate.cpp ForbiddenMove.cpp GameManager.cpp
+SRCS = main.cpp AI.cpp AIAlgorithms.cpp Board.cpp Evaluate.cpp ForbiddenMove.cpp GameManager.cpp GameUI.cpp
 # 定义对象文件
 OBJS = $(SRCS:.cpp=.o)
-
 
 # 默认目标
 all: $(TARGET)
