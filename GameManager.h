@@ -7,7 +7,7 @@
 
 const int BOARD_SIZE = 15;
 const int CELL_SIZE = 40;
-const int MARGIN = 50;
+const int MARGIN = 40;
 
 class GameManager {
 public:

@@ -4,15 +4,29 @@
 #include <cmath>
 #include <vector>
 
-// 辅助函数：绘制填充的圆形
+// 定义最小透明度
+const float MIN_OPACITY = 0.1f;
+
+// 辅助函数：绘制填充的圆形（带抗锯齿）
 void DrawFilledCircle(SDL_Renderer* renderer, int x, int y, int radius)
 {
-    for (int w = 0; w < radius * 2; w++) {
-        for (int h = 0; h < radius * 2; h++) {
-            int dx = radius - w; // horizontal offset
-            int dy = radius - h; // vertical offset
-            if ((dx * dx + dy * dy) <= (radius * radius)) {
-                SDL_RenderDrawPoint(renderer, x + dx, y + dy);
+    for (int w = -radius; w <= radius; w++) {
+        for (int h = -radius; h <= radius; h++) {
+            float distance = sqrtf(w * w + h * h);
+            if (distance <= radius) {
+                Uint8 alpha = 255;
+                // 对圆周边缘应用抗锯齿处理
+                if (distance > radius - 1.0f) {
+                    alpha = static_cast<Uint8>((radius - distance) * 255);
+                }
+
+                // 获取当前绘制颜色
+                Uint8 r, g, b, a;
+                SDL_GetRenderDrawColor(renderer, &r, &g, &b, &a);
+
+                // 设置带有调整后透明度的颜色
+                SDL_SetRenderDrawColor(renderer, r, g, b, alpha);
+                SDL_RenderDrawPoint(renderer, x + w, y + h);
             }
         }
     }
@@ -24,9 +38,11 @@ void DrawBoard(SDL_Renderer* renderer, const std::vector<std::vector<int>>& boar
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     for (int i = 0; i < BOARD_SIZE; i++) {
         // 竖线
-        SDL_RenderDrawLine(renderer, offsetX + MARGIN + i * CELL_SIZE, offsetY + MARGIN, offsetX + MARGIN + i * CELL_SIZE, offsetY + MARGIN + (BOARD_SIZE - 1) * CELL_SIZE);
+        SDL_RenderDrawLine(renderer, offsetX + MARGIN + i * CELL_SIZE, offsetY + MARGIN,
+            offsetX + MARGIN + i * CELL_SIZE, offsetY + MARGIN + (BOARD_SIZE - 1) * CELL_SIZE);
         // 横线
-        SDL_RenderDrawLine(renderer, offsetX + MARGIN, offsetY + MARGIN + i * CELL_SIZE, offsetX + MARGIN + (BOARD_SIZE - 1) * CELL_SIZE, offsetY + MARGIN + i * CELL_SIZE);
+        SDL_RenderDrawLine(renderer, offsetX + MARGIN, offsetY + MARGIN + i * CELL_SIZE,
+            offsetX + MARGIN + (BOARD_SIZE - 1) * CELL_SIZE, offsetY + MARGIN + i * CELL_SIZE);
     }
 
     // 绘制棋子
@@ -34,12 +50,16 @@ void DrawBoard(SDL_Renderer* renderer, const std::vector<std::vector<int>>& boar
         for (int c = 0; c < BOARD_SIZE; ++c) {
             if (board[r][c] != 0) {
                 if (board[r][c] == 1) {
+                    // 设置黑棋颜色
                     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                     DrawFilledCircle(renderer, offsetX + MARGIN + c * CELL_SIZE, offsetY + MARGIN + r * CELL_SIZE, CELL_SIZE / 2 - 2);
                 } else {
-                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                    // 绘制白棋外圈
+                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // 黑色外圈
                     DrawFilledCircle(renderer, offsetX + MARGIN + c * CELL_SIZE, offsetY + MARGIN + r * CELL_SIZE, CELL_SIZE / 2 - 2);
-                    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+
+                    // 绘制白棋内部
+                    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // 白色内部
                     DrawFilledCircle(renderer, offsetX + MARGIN + c * CELL_SIZE, offsetY + MARGIN + r * CELL_SIZE, CELL_SIZE / 2 - 4);
                 }
             }
@@ -73,10 +93,11 @@ void RunGameUI()
         return;
     }
 
-    int windowSize = BOARD_SIZE * CELL_SIZE + 2 * MARGIN + 50;
+    // 设定固定的窗口尺寸
+    int windowSize = BOARD_SIZE * CELL_SIZE + 2 * MARGIN + 50; // 15*40 + 2*40 + 50 = 600 + 80 + 50 = 730
 
     SDL_Window* window = SDL_CreateWindow("Renju GUI", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        windowSize, windowSize, SDL_WINDOW_SHOWN);
+        windowSize, windowSize, SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
     if (!window) {
         SDL_Log("Unable to create window: %s", SDL_GetError());
         IMG_Quit();
@@ -92,6 +113,12 @@ void RunGameUI()
         SDL_Quit();
         return;
     }
+
+    // 启用渲染器的混合模式，以支持透明度
+    SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+
+    // 设置渲染器的逻辑尺寸，保持渲染一致性
+    SDL_RenderSetLogicalSize(renderer, windowSize, windowSize);
 
     // 加载背景图片
     SDL_Surface* bgSurface = IMG_Load("flower.png");
@@ -126,16 +153,21 @@ void RunGameUI()
 
     bool running = true;
     bool dragging = false;
-    int sliderX = MARGIN;
-    int sliderY = BOARD_SIZE * CELL_SIZE + 2 * MARGIN + 10;
-    int sliderWidth = BOARD_SIZE * CELL_SIZE;
+    int sliderX = 325;
+    int sliderY = 680;
+    int sliderWidth = 350;
     int sliderHeight = 20;
 
+    // 获取渲染器输出尺寸（考虑高 DPI）
+    int drawableWidth, drawableHeight;
+    SDL_GetRendererOutputSize(renderer, &drawableWidth, &drawableHeight);
+
     // 计算棋盘的水平和垂直偏移量，使其居中
-    int windowWidth, windowHeight;
-    SDL_GetWindowSize(window, &windowWidth, &windowHeight);
-    int offsetX = (windowWidth - (BOARD_SIZE * CELL_SIZE + MARGIN * 2)) / 2;
-    int offsetY = (windowHeight - (BOARD_SIZE * CELL_SIZE + MARGIN * 2)) / 2;
+    int offsetX = drawableWidth / 2- (BOARD_SIZE * CELL_SIZE + MARGIN * 2);
+    int offsetY = drawableHeight / 2 - (BOARD_SIZE * CELL_SIZE + MARGIN * 2);
+
+    SDL_Log("Drawable Size: %d x %d", drawableWidth, drawableHeight);
+    SDL_Log("OffsetX: %d, OffsetY: %d", offsetX, offsetY);
 
     while (running) {
         SDL_Event event;
@@ -172,11 +204,13 @@ void RunGameUI()
             } else if (event.type == SDL_MOUSEMOTION) {
                 if (dragging) {
                     int x = event.motion.x - sliderX;
-                    opacity = static_cast<float>(x) / sliderWidth;
-                    if (opacity < 0.3f)
-                        opacity = 0.3f; // 设置透明度下限
-                    if (opacity > 1.0f)
-                        opacity = 1.0f;
+                    if (x < 0)
+                        x = 0;
+                    if (x > sliderWidth)
+                        x = sliderWidth;
+
+                    // 将滑动位置映射到 opacity 范围 [MIN_OPACITY, 1.0f]
+                    opacity = MIN_OPACITY + (static_cast<float>(x) / sliderWidth) * (1.0f - MIN_OPACITY);
                     SDL_SetWindowOpacity(window, opacity);
                 }
             }
@@ -189,7 +223,7 @@ void RunGameUI()
         // 绘制棋盘和滑动条
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // 重置颜色和透明度
         DrawBoard(renderer, board, offsetX, offsetY);
-        DrawSlider(renderer, sliderX, sliderY, sliderWidth, sliderHeight, opacity);
+        DrawSlider(renderer, sliderX, sliderY, sliderWidth, sliderHeight, (opacity - MIN_OPACITY) / (1.0f - MIN_OPACITY));
 
         SDL_RenderPresent(renderer);
     }
