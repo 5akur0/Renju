@@ -7,7 +7,6 @@
 // 定义最小透明度
 const float MIN_OPACITY = 0.1f;
 
-// 辅助函数：绘制填充的圆形（带抗锯齿）
 void DrawFilledCircle(SDL_Renderer* renderer, int x, int y, int radius)
 {
     for (int w = -radius; w <= radius; w++) {
@@ -32,6 +31,22 @@ void DrawFilledCircle(SDL_Renderer* renderer, int x, int y, int radius)
     }
 }
 
+void DrawGradientCircle(SDL_Renderer* renderer, int x, int y, int radius, SDL_Color innerColor, SDL_Color outerColor)
+{
+    // 从内到外绘制渐变圆
+    for (int r = radius; r > 0; --r) {
+        // 计算当前半径对应的颜色
+        float t = static_cast<float>(r) / radius; // 当前半径的比例
+        Uint8 rColor = static_cast<Uint8>(innerColor.r * t + outerColor.r * (1 - t));
+        Uint8 gColor = static_cast<Uint8>(innerColor.g * t + outerColor.g * (1 - t));
+        Uint8 bColor = static_cast<Uint8>(innerColor.b * t + outerColor.b * (1 - t));
+        Uint8 aColor = static_cast<Uint8>(innerColor.a * t + outerColor.a * (1 - t));
+
+        SDL_SetRenderDrawColor(renderer, rColor, gColor, bColor, aColor);
+        DrawFilledCircle(renderer, x, y, r);
+    }
+}
+
 void DrawBoard(SDL_Renderer* renderer, const std::vector<std::vector<int>>& board, int offsetX, int offsetY)
 {
     // 绘制网格
@@ -50,17 +65,15 @@ void DrawBoard(SDL_Renderer* renderer, const std::vector<std::vector<int>>& boar
         for (int c = 0; c < BOARD_SIZE; ++c) {
             if (board[r][c] != 0) {
                 if (board[r][c] == 1) {
-                    // 设置黑棋颜色
-                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-                    DrawFilledCircle(renderer, offsetX + MARGIN + c * CELL_SIZE, offsetY + MARGIN + r * CELL_SIZE, CELL_SIZE / 2 - 2);
+                    // 黑棋：从深灰到黑色的渐变
+                    SDL_Color innerColor = { 50, 50, 50, 255 };
+                    SDL_Color outerColor = { 0, 0, 0, 255 };
+                    DrawGradientCircle(renderer, offsetX + MARGIN + c * CELL_SIZE, offsetY + MARGIN + r * CELL_SIZE, CELL_SIZE / 2 - 2, innerColor, outerColor);
                 } else {
-                    // 绘制白棋外圈
-                    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // 黑色外圈
-                    DrawFilledCircle(renderer, offsetX + MARGIN + c * CELL_SIZE, offsetY + MARGIN + r * CELL_SIZE, CELL_SIZE / 2 - 2);
-
-                    // 绘制白棋内部
-                    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255); // 白色内部
-                    DrawFilledCircle(renderer, offsetX + MARGIN + c * CELL_SIZE, offsetY + MARGIN + r * CELL_SIZE, CELL_SIZE / 2 - 4);
+                    // 白棋：从浅灰到白色的渐变
+                    SDL_Color innerColor = { 200, 200, 200, 255 };
+                    SDL_Color outerColor = { 255, 255, 255, 255 };
+                    DrawGradientCircle(renderer, offsetX + MARGIN + c * CELL_SIZE, offsetY + MARGIN + r * CELL_SIZE, CELL_SIZE / 2 - 2, innerColor, outerColor);
                 }
             }
         }
