@@ -9,6 +9,8 @@ const int BOARD_SIZE = 15;
 const int CELL_SIZE = 40;
 const int MARGIN = 40;
 
+const int BUTTON_RADIUS = 20;
+
 class GameManager {
 public:
     GameManager();

@@ -5,7 +5,7 @@
 #include <vector>
 
 // 定义最小透明度
-const float MIN_OPACITY = 0.1f;
+const float MIN_OPACITY = 0.3f;
 
 void DrawFilledCircle(SDL_Renderer* renderer, int x, int y, int radius)
 {
@@ -30,7 +30,6 @@ void DrawFilledCircle(SDL_Renderer* renderer, int x, int y, int radius)
         }
     }
 }
-#include <cmath>
 
 void DrawSmoothGradientCircle(SDL_Renderer* renderer, int x, int y, int radius, SDL_Color centerColor, SDL_Color edgeColor, int centerRadius)
 {
@@ -61,18 +60,27 @@ void DrawSmoothGradientCircle(SDL_Renderer* renderer, int x, int y, int radius, 
         DrawFilledCircle(renderer, x, y, r);
     }
 }
-
 void DrawBoard(SDL_Renderer* renderer, const std::vector<std::vector<int>>& board, int offsetX, int offsetY)
 {
-    // 绘制网格
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    const int lineWidth = 2; // 设置线宽
+
+    // 设置颜色为黑色
+    SDL_SetRenderDrawColor(renderer, 20, 20, 20, 250);
+
+    // 绘制竖线
     for (int i = 0; i < BOARD_SIZE; i++) {
-        // 竖线
-        SDL_RenderDrawLine(renderer, offsetX + MARGIN + i * CELL_SIZE, offsetY + MARGIN,
-            offsetX + MARGIN + i * CELL_SIZE, offsetY + MARGIN + (BOARD_SIZE - 1) * CELL_SIZE);
-        // 横线
-        SDL_RenderDrawLine(renderer, offsetX + MARGIN, offsetY + MARGIN + i * CELL_SIZE,
-            offsetX + MARGIN + (BOARD_SIZE - 1) * CELL_SIZE, offsetY + MARGIN + i * CELL_SIZE);
+        for (int w = 0; w < lineWidth; ++w) {
+            SDL_RenderDrawLine(renderer, offsetX + MARGIN + i * CELL_SIZE + w, offsetY + MARGIN,
+                offsetX + MARGIN + i * CELL_SIZE + w, offsetY + MARGIN + (BOARD_SIZE - 1) * CELL_SIZE);
+        }
+    }
+
+    // 绘制横线
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int w = 0; w < lineWidth; ++w) {
+            SDL_RenderDrawLine(renderer, offsetX + MARGIN, offsetY + MARGIN + i * CELL_SIZE + w,
+                offsetX + MARGIN + (BOARD_SIZE - 1) * CELL_SIZE, offsetY + MARGIN + i * CELL_SIZE + w);
+        }
     }
 
     // 绘制棋子
@@ -123,20 +131,48 @@ void DrawGradientRoundedRect(SDL_Renderer* renderer, SDL_Rect rect, SDL_Color st
     }
 }
 
+void DrawGradientRect(SDL_Renderer* renderer, SDL_Rect rect, SDL_Color startColor, SDL_Color endColor)
+{
+    for (int i = 0; i < rect.w; ++i) {
+        float t = static_cast<float>(i) / rect.w;
+        Uint8 r = static_cast<Uint8>(startColor.r * (1 - t) + endColor.r * t);
+        Uint8 g = static_cast<Uint8>(startColor.g * (1 - t) + endColor.g * t);
+        Uint8 b = static_cast<Uint8>(startColor.b * (1 - t) + endColor.b * t);
+        Uint8 a = static_cast<Uint8>(startColor.a * (1 - t) + endColor.a * t);
+
+        SDL_SetRenderDrawColor(renderer, r, g, b, a);
+        SDL_RenderDrawLine(renderer, rect.x + i, rect.y, rect.x + i, rect.y + rect.h);
+    }
+}
+
 void DrawSlider(SDL_Renderer* renderer, int x, int y, int width, int height, float value)
 {
-    // 滑动条背景：从左到右渐变，表示透明度范围
-    SDL_Color startColor = { 0, 0, 0, static_cast<Uint8>(MIN_OPACITY * 255) }; // 左端颜色
-    SDL_Color endColor = { 0, 0, 0, 255 }; // 右端颜色
+    // 滑动条背景：从左到右透明度渐变
+    SDL_Color startColor = { 0, 0, 0, 10 }; // 左端透明度为10
+    SDL_Color endColor = { 0, 0, 0, 160 }; // 右端透明度为160
     SDL_Rect sliderBg = { x, y, width, height };
     DrawGradientRoundedRect(renderer, sliderBg, startColor, endColor, height / 2);
 
-    // 绘制滑块
+    // 绘制滑块（带渐变的矩形）
     int sliderPos = static_cast<int>(x + width * value);
-    SDL_Color knobColor = { 255, 255, 255, 255 }; // 滑块颜色
-    DrawFilledCircle(renderer, sliderPos, y + height / 2, height / 2, knobColor);
+    int knobWidth = 5; // 滑块的宽度
+    SDL_Rect knobRect = { sliderPos - knobWidth / 2, y, knobWidth, height };
+
+    // 滑块的渐变色
+    SDL_Color knobStartColor = { 150, 150, 150, 255 }; // 滑块左侧颜色
+    SDL_Color knobEndColor = { 50, 50, 50, 255 }; // 滑块右侧颜色
+    DrawGradientRect(renderer, knobRect, knobStartColor, knobEndColor);
 }
 
+// 绘制“X”标识
+void DrawXMark(SDL_Renderer* renderer, int centerX, int centerY, int size, SDL_Color color)
+{
+    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
+    SDL_RenderDrawLine(renderer, centerX - size, centerY - size, centerX + size, centerY + size);
+    SDL_RenderDrawLine(renderer, centerX - size, centerY + size, centerX + size, centerY - size);
+}
+
+// 主游戏循环
 void RunGameUI()
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -173,7 +209,7 @@ void RunGameUI()
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_RenderSetLogicalSize(renderer, windowSize, windowSize);
 
-    SDL_Surface* bgSurface = IMG_Load("flower.png");
+    SDL_Surface* bgSurface = IMG_Load("lake.png");
     if (!bgSurface) {
         SDL_Log("Unable to load image: %s", IMG_GetError());
         SDL_DestroyRenderer(renderer);
@@ -205,7 +241,7 @@ void RunGameUI()
     bool running = true;
     bool dragging = false;
     int sliderX = 325;
-    int sliderY = 680;
+    int sliderY = 700;
     int sliderWidth = 350;
     int sliderHeight = 10;
 
@@ -218,6 +254,10 @@ void RunGameUI()
     SDL_Log("Drawable Size: %d x %d", drawableWidth, drawableHeight);
     SDL_Log("OffsetX: %d, OffsetY: %d", offsetX, offsetY);
 
+    // 定义退出按钮的位置
+    int buttonX = BUTTON_RADIUS;
+    int buttonY = BUTTON_RADIUS;
+
     while (running) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -228,7 +268,12 @@ void RunGameUI()
                     int x = event.button.x;
                     int y = event.button.y;
 
-                    if (x >= sliderX && x <= sliderX + sliderWidth && y >= sliderY && y <= sliderY + sliderHeight) {
+                    // 检查是否点击了退出按钮
+                    int dx = x - buttonX;
+                    int dy = y - buttonY;
+                    if (dx * dx + dy * dy <= BUTTON_RADIUS * BUTTON_RADIUS) {
+                        running = false;
+                    } else if (x >= sliderX && x <= sliderX + sliderWidth && y >= sliderY && y <= sliderY + sliderHeight) {
                         dragging = true;
                     } else if (y < sliderY) {
                         int boardX = x - offsetX - MARGIN;
@@ -270,6 +315,15 @@ void RunGameUI()
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         DrawBoard(renderer, board, offsetX, offsetY);
         DrawSlider(renderer, sliderX, sliderY, sliderWidth, sliderHeight, (opacity - MIN_OPACITY) / (1.0f - MIN_OPACITY));
+
+        // 绘制圆形退出按钮
+        SDL_Color centerColor = { 255, 100, 100, 255 }; // 中心颜色
+        SDL_Color edgeColor = { 200, 0, 0, 255 }; // 边缘颜色
+        DrawSmoothGradientCircle(renderer, buttonX, buttonY, BUTTON_RADIUS, centerColor, edgeColor, BUTTON_RADIUS * 0.3);
+
+        // 绘制“X”标识
+        SDL_Color xColor = { 255, 255, 255, 255 }; // 白色的“X”
+        DrawXMark(renderer, buttonX, buttonY, BUTTON_RADIUS / 2, xColor);
 
         SDL_RenderPresent(renderer);
     }
