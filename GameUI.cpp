@@ -164,13 +164,6 @@ void DrawSlider(SDL_Renderer* renderer, int x, int y, int width, int height, flo
     DrawGradientRect(renderer, knobRect, knobStartColor, knobEndColor);
 }
 
-// 绘制“X”标识
-void DrawXMark(SDL_Renderer* renderer, int centerX, int centerY, int size, SDL_Color color)
-{
-    SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
-    SDL_RenderDrawLine(renderer, centerX - size, centerY - size, centerX + size, centerY + size);
-    SDL_RenderDrawLine(renderer, centerX - size, centerY + size, centerX + size, centerY - size);
-}
 
 // 主游戏循环
 void RunGameUI()
@@ -209,7 +202,7 @@ void RunGameUI()
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_RenderSetLogicalSize(renderer, windowSize, windowSize);
 
-    SDL_Surface* bgSurface = IMG_Load("lake.png");
+    SDL_Surface* bgSurface = IMG_Load("pku.png");
     if (!bgSurface) {
         SDL_Log("Unable to load image: %s", IMG_GetError());
         SDL_DestroyRenderer(renderer);
@@ -255,8 +248,8 @@ void RunGameUI()
     SDL_Log("OffsetX: %d, OffsetY: %d", offsetX, offsetY);
 
     // 定义退出按钮的位置
-    int buttonX = BUTTON_RADIUS;
-    int buttonY = BUTTON_RADIUS;
+    int buttonX = BUTTON_RADIUS + 3;
+    int buttonY = BUTTON_RADIUS + 3; 
 
     while (running) {
         SDL_Event event;
@@ -317,13 +310,9 @@ void RunGameUI()
         DrawSlider(renderer, sliderX, sliderY, sliderWidth, sliderHeight, (opacity - MIN_OPACITY) / (1.0f - MIN_OPACITY));
 
         // 绘制圆形退出按钮
-        SDL_Color centerColor = { 255, 100, 100, 255 }; // 中心颜色
+        SDL_Color centerColor = { 250, 50, 50, 255 }; // 中心颜色
         SDL_Color edgeColor = { 200, 0, 0, 255 }; // 边缘颜色
         DrawSmoothGradientCircle(renderer, buttonX, buttonY, BUTTON_RADIUS, centerColor, edgeColor, BUTTON_RADIUS * 0.3);
-
-        // 绘制“X”标识
-        SDL_Color xColor = { 255, 255, 255, 255 }; // 白色的“X”
-        DrawXMark(renderer, buttonX, buttonY, BUTTON_RADIUS / 2, xColor);
 
         SDL_RenderPresent(renderer);
     }
