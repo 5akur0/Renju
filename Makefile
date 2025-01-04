@@ -1,7 +1,7 @@
 # 定义编译器
 CXX = g++
-CXXFLAGS = -std=c++1z -O2 -Wall -I/opt/homebrew/include/SDL2 -I/opt/homebrew/include/SDL2_image
-LDFLAGS = -L/opt/homebrew/lib -lSDL2 -lSDL2_image -ljsoncpp -lpthread
+CXXFLAGS = -std=c++1z -O2 -Wall -I/opt/homebrew/include/SDL2 -I/opt/homebrew/include/SDL2_image -I/opt/homebrew/include/SDL2_ttf
+LDFLAGS = -L/opt/homebrew/lib -lSDL2 -lSDL2_image -lSDL2_ttf -ljsoncpp -lpthread
 
 # 定义目标文件
 TARGET = renju

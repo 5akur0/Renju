@@ -22,6 +22,7 @@ public:
     void LoadGame();
     void ClearAllSaves();
     void QuitGame();
+    std::pair<int, int> GetBestMove(int player);
     void PromptSaveAndQuit();
 
 private:

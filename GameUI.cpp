@@ -226,7 +226,6 @@ void RunGameUI()
     SDL_SetWindowOpacity(window, opacity);
 
     std::vector<std::vector<int>> board(BOARD_SIZE, std::vector<int>(BOARD_SIZE, 0));
-    bool isBlackTurn = true;
 
     GameManager gameManager;
     gameManager.NewGame();
@@ -249,55 +248,84 @@ void RunGameUI()
 
     // 定义退出按钮的位置
     int buttonX = BUTTON_RADIUS + 3;
-    int buttonY = BUTTON_RADIUS + 3; 
+    int buttonY = BUTTON_RADIUS + 3;
+
+    // 添加选择先后手的对话框
+    SDL_MessageBoxButtonData buttons[] = {
+        { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "执黑先手" },
+        { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 1, "执白后手" },
+    };
+    SDL_MessageBoxData messageboxdata = {
+        SDL_MESSAGEBOX_INFORMATION,
+        window,
+        "选择先后手",
+        "请选择执黑先手还是执白后手？",
+        SDL_arraysize(buttons),
+        buttons,
+        NULL
+    };
+    int buttonid;
+    SDL_ShowMessageBox(&messageboxdata, &buttonid);
+
+    bool playerIsBlack = (buttonid == 0);
+    bool isBlackTurn = true; // 黑方先手
+
+    gameManager.NewGame();
 
     while (running) {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 running = false;
-            } else if (event.type == SDL_MOUSEBUTTONDOWN) {
-                if (event.button.button == SDL_BUTTON_LEFT) {
-                    int x = event.button.x;
-                    int y = event.button.y;
+            } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+                // 只在玩家回合才处理鼠标点击
+                if ((playerIsBlack && isBlackTurn) || (!playerIsBlack && !isBlackTurn)) {
+                    int x = event.button.x - offsetX - MARGIN;
+                    int y = event.button.y - offsetY - MARGIN;
 
-                    // 检查是否点击了退出按钮
-                    int dx = x - buttonX;
-                    int dy = y - buttonY;
-                    if (dx * dx + dy * dy <= BUTTON_RADIUS * BUTTON_RADIUS) {
-                        running = false;
-                    } else if (x >= sliderX && x <= sliderX + sliderWidth && y >= sliderY && y <= sliderY + sliderHeight) {
-                        dragging = true;
-                    } else if (y < sliderY) {
-                        int boardX = x - offsetX - MARGIN;
-                        int boardY = y - offsetY - MARGIN;
+                    if (x >= 0 && y >= 0) {
+                        int col = (x + CELL_SIZE / 2) / CELL_SIZE;
+                        int row = (y + CELL_SIZE / 2) / CELL_SIZE;
+                        if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE) {
+                            if (board[row][col] == 0) {
+                                // 玩家落子
+                                board[row][col] = isBlackTurn ? 1 : 2;
+                                isBlackTurn = !isBlackTurn;
 
-                        if (boardX >= 0 && boardY >= 0) {
-                            int col = (boardX + CELL_SIZE / 2) / CELL_SIZE;
-                            int row = (boardY + CELL_SIZE / 2) / CELL_SIZE;
-                            if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE) {
-                                if (board[row][col] == 0) {
-                                    board[row][col] = isBlackTurn ? 1 : 2;
-                                    isBlackTurn = !isBlackTurn;
+                                // 检查胜负
+                                if (gameManager.CheckWin()) {
+                                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
+                                        "游戏结束",
+                                        isBlackTurn ? "白方胜利!" : "黑方胜利!",
+                                        window);
+                                    running = false;
+                                    continue;
+                                }
+
+                                // AI 回合
+                                if (running) {
+                                    // 让 AI 思考一会儿
+                                    SDL_Delay(300);
+
+                                    // AI 落子
+                                    auto [aiRow, aiCol] = gameManager.GetBestMove(isBlackTurn ? 1 : 2);
+                                    if (board[aiRow][aiCol] == 0) {
+                                        board[aiRow][aiCol] = isBlackTurn ? 1 : 2;
+                                        isBlackTurn = !isBlackTurn;
+
+                                        // 检查 AI 是否获胜
+                                        if (gameManager.CheckWin()) {
+                                            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
+                                                "游戏结束",
+                                                isBlackTurn ? "白方胜利!" : "黑方胜利!",
+                                                window);
+                                            running = false;
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
-                }
-            } else if (event.type == SDL_MOUSEBUTTONUP) {
-                if (event.button.button == SDL_BUTTON_LEFT) {
-                    dragging = false;
-                }
-            } else if (event.type == SDL_MOUSEMOTION) {
-                if (dragging) {
-                    int x = event.motion.x - sliderX;
-                    if (x < 0)
-                        x = 0;
-                    if (x > sliderWidth)
-                        x = sliderWidth;
-
-                    opacity = MIN_OPACITY + (static_cast<float>(x) / sliderWidth) * (1.0f - MIN_OPACITY);
-                    SDL_SetWindowOpacity(window, opacity);
                 }
             }
         }

@@ -23,47 +23,9 @@ GameManager::GameManager()
 void GameManager::NewGame()
 {
     board.Initialize();
-    moveCount = 0; // 初始化步数
+    moveCount = 0;
     lastMoveX = -1;
     lastMoveY = -1;
-    bool isBlackTurn = true;
-    SDL_Event event;
-    bool running = true;
-
-    while (running) {
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) {
-                running = false;
-            } else if (event.type == SDL_MOUSEBUTTONDOWN) {
-                if (event.button.button == SDL_BUTTON_LEFT) {
-                    int x = event.button.x - MARGIN;
-                    int y = event.button.y - MARGIN;
-
-                    if (x >= 0 && y >= 0) {
-                        int col = x / CELL_SIZE;
-                        int row = y / CELL_SIZE;
-                        if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE) {
-                            if (board.GetCell(row + 1, col + 1) == 0) {
-                                board.SetCell(row + 1, col + 1, isBlackTurn ? C_BLACK : C_WHITE);
-                                lastMoveX = row + 1;
-                                lastMoveY = col + 1;
-                                isBlackTurn = !isBlackTurn;
-                                moveCount++;
-                                board.SetLastMove(lastMoveX, lastMoveY);
-                                if (CheckWin()) {
-                                    running = false;
-                                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "游戏结束", isBlackTurn ? "白方胜利！" : "黑方胜利！", NULL);
-                                } else if (IsBoardFull()) {
-                                    running = false;
-                                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "游戏结束", "平局！", NULL);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
 }
 
 bool GameManager::CheckWin()
@@ -133,6 +95,12 @@ void GameManager::QuitGame()
 {
     printf("程序退出。\n");
     exit(0);
+}
+
+std::pair<int, int> GameManager::GetBestMove(int player)
+{
+    ai.MakeMove(board, player);
+    return { ai.GetLastMoveX(), ai.GetLastMoveY() };
 }
 
 void GameManager::PromptSaveAndQuit()
