@@ -3,9 +3,12 @@
 #include <SDL_image.h>
 #include <cmath>
 #include <vector>
+#include <iostream>
 
 // 定义最小透明度
 const float MIN_OPACITY = 0.3f;
+
+GameManager gameManager;
 
 void DrawFilledCircle(SDL_Renderer* renderer, int x, int y, int radius)
 {
@@ -60,7 +63,7 @@ void DrawSmoothGradientCircle(SDL_Renderer* renderer, int x, int y, int radius, 
         DrawFilledCircle(renderer, x, y, r);
     }
 }
-void DrawBoard(SDL_Renderer* renderer, const std::vector<std::vector<int>>& board, int offsetX, int offsetY)
+void DrawBoard(SDL_Renderer* renderer, int offsetX, int offsetY)
 {
     const int lineWidth = 2; // 设置线宽
 
@@ -84,22 +87,27 @@ void DrawBoard(SDL_Renderer* renderer, const std::vector<std::vector<int>>& boar
     }
 
     // 绘制棋子
-    for (int r = 0; r < BOARD_SIZE; ++r) {
-        for (int c = 0; c < BOARD_SIZE; ++c) {
-            if (board[r][c] != 0) {
+    for (int r = 1; r <= BOARD_SIZE; ++r) {
+        for (int c = 1; c <= BOARD_SIZE; ++c) {
+            int cell = gameManager.board.GetCell(r, c);
+            if (cell != 0) {
                 int pieceRadius = CELL_SIZE / 2 - 2;
                 int centerRadius = pieceRadius * 0.3;
 
-                if (board[r][c] == 1) {
-                    // 黑棋：中心纯黑，边缘渐变到深灰
+                // 计算棋子的实际绘制位置
+                int pieceX = offsetX + MARGIN + (c - 1) * CELL_SIZE;
+                int pieceY = offsetY + MARGIN + (r - 1) * CELL_SIZE;
+
+                if (cell == 1) {
                     SDL_Color centerColor = { 0, 0, 0, 255 };
                     SDL_Color edgeColor = { 25, 25, 25, 255 };
-                    DrawSmoothGradientCircle(renderer, offsetX + MARGIN + c * CELL_SIZE, offsetY + MARGIN + r * CELL_SIZE, pieceRadius, centerColor, edgeColor, centerRadius);
+                    DrawSmoothGradientCircle(renderer, pieceX, pieceY,
+                        pieceRadius, centerColor, edgeColor, centerRadius);
                 } else {
-                    // 白棋：中心纯白，边缘渐变到浅灰
                     SDL_Color centerColor = { 255, 255, 255, 255 };
                     SDL_Color edgeColor = { 225, 225, 225, 255 };
-                    DrawSmoothGradientCircle(renderer, offsetX + MARGIN + c * CELL_SIZE, offsetY + MARGIN + r * CELL_SIZE, pieceRadius, centerColor, edgeColor, centerRadius);
+                    DrawSmoothGradientCircle(renderer, pieceX, pieceY,
+                        pieceRadius, centerColor, edgeColor, centerRadius);
                 }
             }
         }
@@ -173,22 +181,44 @@ void RunGameUI()
         return;
     }
 
+    // 创建一个临时窗口来显示对话框
+    SDL_Window* window = SDL_CreateWindow("Renju GUI", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        400, 200, SDL_WINDOW_SHOWN);
+
+    // 选择先后手对话框
+    SDL_MessageBoxButtonData buttons[] = {
+        { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "执黑先手" },
+        { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 1, "执白后手" },
+    };
+    SDL_MessageBoxData messageboxdata = {
+        SDL_MESSAGEBOX_INFORMATION,
+        window,
+        "选择先后手",
+        "请选择执黑先手还是执白后手？",
+        SDL_arraysize(buttons),
+        buttons,
+        NULL
+    };
+
+    int buttonid;
+    SDL_ShowMessageBox(&messageboxdata, &buttonid);
+    bool playerIsBlack = (buttonid == 0);
+    bool isBlackTurn = true; // 黑方先手
+
+    // 销毁临时窗口，创建游戏主窗口
+    SDL_DestroyWindow(window);
+
+    int windowSize = BOARD_SIZE * CELL_SIZE + 2 * MARGIN + 50;
+    window = SDL_CreateWindow("Renju GUI", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        windowSize, windowSize, SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
+
+
     if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
         SDL_Log("Unable to initialize SDL_image: %s", IMG_GetError());
         SDL_Quit();
         return;
     }
 
-    int windowSize = BOARD_SIZE * CELL_SIZE + 2 * MARGIN + 50;
-
-    SDL_Window* window = SDL_CreateWindow("Renju GUI", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-        windowSize, windowSize, SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
-    if (!window) {
-        SDL_Log("Unable to create window: %s", SDL_GetError());
-        IMG_Quit();
-        SDL_Quit();
-        return;
-    }
 
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
@@ -225,7 +255,6 @@ void RunGameUI()
     float opacity = 0.8f;
     SDL_SetWindowOpacity(window, opacity);
 
-    std::vector<std::vector<int>> board(BOARD_SIZE, std::vector<int>(BOARD_SIZE, 0));
 
     GameManager gameManager;
     gameManager.NewGame();
@@ -250,29 +279,27 @@ void RunGameUI()
     int buttonX = BUTTON_RADIUS + 3;
     int buttonY = BUTTON_RADIUS + 3;
 
-    // 添加选择先后手的对话框
-    SDL_MessageBoxButtonData buttons[] = {
-        { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 0, "执黑先手" },
-        { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 1, "执白后手" },
-    };
-    SDL_MessageBoxData messageboxdata = {
-        SDL_MESSAGEBOX_INFORMATION,
-        window,
-        "选择先后手",
-        "请选择执黑先手还是执白后手？",
-        SDL_arraysize(buttons),
-        buttons,
-        NULL
-    };
-    int buttonid;
-    SDL_ShowMessageBox(&messageboxdata, &buttonid);
-
-    bool playerIsBlack = (buttonid == 0);
-    bool isBlackTurn = true; // 黑方先手
 
     gameManager.NewGame();
 
     while (running) {
+        if ((!playerIsBlack && isBlackTurn) || (playerIsBlack && !isBlackTurn)) {
+            auto [aiRow, aiCol] = gameManager.GetBestMove(isBlackTurn ? 1 : 2);
+            if (gameManager.board.GetCell(aiRow, aiCol) == 0) {
+                gameManager.board.SetCell(aiRow, aiCol, isBlackTurn ? 1 : 2);
+                isBlackTurn = !isBlackTurn;
+
+                if (gameManager.CheckWin()) {
+                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
+                        "游戏结束",
+                        !isBlackTurn ? "白方胜利!" : "黑方胜利!",
+                        window);
+                    running = false;
+                    continue;
+                }
+            }
+        }
+
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
@@ -287,9 +314,9 @@ void RunGameUI()
                         int col = (x + CELL_SIZE / 2) / CELL_SIZE;
                         int row = (y + CELL_SIZE / 2) / CELL_SIZE;
                         if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE) {
-                            if (board[row][col] == 0) {
+                            if (gameManager.board.GetCell(row + 1, col + 1) == 0) {
                                 // 玩家落子
-                                board[row][col] = isBlackTurn ? 1 : 2;
+                                gameManager.board.SetCell(row + 1, col + 1, isBlackTurn ? 1 : 2);
                                 isBlackTurn = !isBlackTurn;
 
                                 // 检查胜负
@@ -299,29 +326,6 @@ void RunGameUI()
                                         isBlackTurn ? "白方胜利!" : "黑方胜利!",
                                         window);
                                     running = false;
-                                    continue;
-                                }
-
-                                // AI 回合
-                                if (running) {
-                                    // 让 AI 思考一会儿
-                                    SDL_Delay(300);
-
-                                    // AI 落子
-                                    auto [aiRow, aiCol] = gameManager.GetBestMove(isBlackTurn ? 1 : 2);
-                                    if (board[aiRow][aiCol] == 0) {
-                                        board[aiRow][aiCol] = isBlackTurn ? 1 : 2;
-                                        isBlackTurn = !isBlackTurn;
-
-                                        // 检查 AI 是否获胜
-                                        if (gameManager.CheckWin()) {
-                                            SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
-                                                "游戏结束",
-                                                isBlackTurn ? "白方胜利!" : "黑方胜利!",
-                                                window);
-                                            running = false;
-                                        }
-                                    }
                                 }
                             }
                         }
@@ -334,7 +338,7 @@ void RunGameUI()
         SDL_RenderCopy(renderer, bgTexture, nullptr, nullptr);
 
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        DrawBoard(renderer, board, offsetX, offsetY);
+        DrawBoard(renderer, offsetX, offsetY);
         DrawSlider(renderer, sliderX, sliderY, sliderWidth, sliderHeight, (opacity - MIN_OPACITY) / (1.0f - MIN_OPACITY));
 
         // 绘制圆形退出按钮

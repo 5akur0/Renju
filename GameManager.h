@@ -24,9 +24,9 @@ public:
     void QuitGame();
     std::pair<int, int> GetBestMove(int player);
     void PromptSaveAndQuit();
+    Board board;
 
 private:
-    Board board;
     AI ai;
     int moveCount;
     int lastMoveX;
