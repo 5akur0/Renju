@@ -298,6 +298,9 @@ void RunGameUI()
                     continue;
                 }
             }
+            else {
+                std::cout << "AI落子错误" << gameManager.board.GetCell(aiRow, aiCol) << std::endl;
+            }
         }
 
         SDL_Event event;
