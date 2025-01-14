@@ -113,8 +113,8 @@ void DrawBoard(SDL_Renderer* renderer, int offsetX, int offsetY, int board[16][1
                     SDL_Color centerColor = { 250, 250, 250, 250 };
                     SDL_Color edgeColor = { 225, 225, 225, 255 };
                     if (r == lastMove.first && c == lastMove.second) {
-                        centerColor = { 225, 200, 225, 255 };
-                        edgeColor = { 200, 175, 200, 255 };
+                        centerColor = { 200, 160, 200, 255 };
+                        edgeColor = { 180, 140, 180, 255 };
                     }
                     DrawSmoothGradientCircle(renderer, pieceX, pieceY,
                         pieceRadius, centerColor, edgeColor, centerRadius);
@@ -199,7 +199,7 @@ void DrawButton(SDL_Renderer* renderer, int x, int y, const char* text, bool isH
         edgeColor = { 30, 180, 42, 255 };
     }
     DrawSmoothGradientCircle(renderer, x, y, BUTTON_RADIUS,
-        centerColor, edgeColor, BUTTON_RADIUS * 0.3);
+        centerColor, edgeColor, BUTTON_RADIUS * 0.7);
 
     // 记得在主循环中处理鼠标悬停状态
     SDL_GetMouseState(&mouseX, &mouseY);
@@ -373,6 +373,10 @@ void RunGameUI()
                     continue; // 跳过后续的棋盘点击检测
                 }
 
+                // 检查是否在滑块上点击
+                if (mouseX >= sliderX && mouseX <= sliderX + sliderWidth && mouseY >= sliderY && mouseY <= sliderY + sliderHeight) {
+                    dragging = true;
+                }
 
                 // 只在玩家回合才处理鼠标点击
                 if ((playerIsBlack && isBlackTurn) || (!playerIsBlack && !isBlackTurn)) {
@@ -399,6 +403,21 @@ void RunGameUI()
                             }
                         }
                     }
+                }
+            } else if (event.type == SDL_MOUSEBUTTONUP && event.button.button == SDL_BUTTON_LEFT) {
+                dragging = false;
+            } else if (event.type == SDL_MOUSEMOTION) {
+                if (dragging) {
+                    mouseX = event.motion.x;
+                    mouseY = event.motion.y;
+                    if (mouseX < sliderX) {
+                        mouseX = sliderX;
+                    } else if (mouseX > sliderX + sliderWidth) {
+                        mouseX = sliderX + sliderWidth;
+                    }
+                    float newValue = static_cast<float>(mouseX - sliderX) / sliderWidth;
+                    opacity = MIN_OPACITY + newValue * (1.0f - MIN_OPACITY);
+                    SDL_SetWindowOpacity(window, opacity);
                 }
             }
         }
