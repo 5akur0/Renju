@@ -296,16 +296,15 @@ void RunGameUI()
             if (gameManager.board.GetCell(aiRow, aiCol) == 0) {
                 gameManager.board.SetCell(aiRow, aiCol, isBlackTurn ? 1 : 2);
                 gameManager.SetLastMove(aiRow, aiCol);
-                isBlackTurn = !isBlackTurn;
-
                 if (gameManager.CheckWin()) {
                     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
                         "游戏结束",
-                        !isBlackTurn ? "白方胜利!" : "黑方胜利!",
+                        isBlackTurn ? "黑方胜利!" : "白方胜利!",
                         window);
                     running = false;
                     continue;
                 }
+                isBlackTurn = !isBlackTurn;
             }
             else {
                 std::cout << "AI落子错误" << gameManager.board.GetCell(aiRow, aiCol) << std::endl;
@@ -330,8 +329,6 @@ void RunGameUI()
                                 // 玩家落子
                                 gameManager.board.SetCell(row + 1, col + 1, isBlackTurn ? 1 : 2);
                                 gameManager.SetLastMove(row + 1, col + 1);
-                                isBlackTurn = !isBlackTurn;
-
                                 // 检查胜负
                                 if (gameManager.CheckWin()) {
                                     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
@@ -340,6 +337,7 @@ void RunGameUI()
                                         window);
                                     running = false;
                                 }
+                                isBlackTurn = !isBlackTurn;
                             }
                         }
                     }
