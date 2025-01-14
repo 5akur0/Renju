@@ -97,6 +97,12 @@ void GameManager::QuitGame()
     exit(0);
 }
 
+void GameManager::SetLastMove(int x, int y)
+{
+    lastMoveX = x;
+    lastMoveY = y;
+}
+
 std::pair<int, int> GameManager::GetBestMove(int player)
 {
     ai.MakeMove(board, player);

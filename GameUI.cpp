@@ -63,7 +63,7 @@ void DrawSmoothGradientCircle(SDL_Renderer* renderer, int x, int y, int radius, 
         DrawFilledCircle(renderer, x, y, r);
     }
 }
-void DrawBoard(SDL_Renderer* renderer, int offsetX, int offsetY, int board[16][16])
+void DrawBoard(SDL_Renderer* renderer, int offsetX, int offsetY, int board[16][16], std::pair<int, int> lastMove)
 {
     const int lineWidth = 2; // 设置线宽
 
@@ -101,11 +101,19 @@ void DrawBoard(SDL_Renderer* renderer, int offsetX, int offsetY, int board[16][1
                 if (cell == 1) {
                     SDL_Color centerColor = { 0, 0, 0, 255 };
                     SDL_Color edgeColor = { 25, 25, 25, 255 };
+                    if (r == lastMove.first && c == lastMove.second) {
+                        centerColor = { 255, 100, 100, 255 };
+                        edgeColor = { 225, 70, 70, 255 };
+                    }
                     DrawSmoothGradientCircle(renderer, pieceX, pieceY,
                         pieceRadius, centerColor, edgeColor, centerRadius);
                 } else {
                     SDL_Color centerColor = { 255, 255, 255, 255 };
                     SDL_Color edgeColor = { 225, 225, 225, 255 };
+                    if (r == lastMove.first && c == lastMove.second) {
+                        centerColor = { 100, 100, 100, 255 };
+                        edgeColor = { 70, 70, 70, 255 };
+                    }
                     DrawSmoothGradientCircle(renderer, pieceX, pieceY,
                         pieceRadius, centerColor, edgeColor, centerRadius);
                 }
@@ -287,6 +295,7 @@ void RunGameUI()
             auto [aiRow, aiCol] = gameManager.GetBestMove(isBlackTurn ? 1 : 2);
             if (gameManager.board.GetCell(aiRow, aiCol) == 0) {
                 gameManager.board.SetCell(aiRow, aiCol, isBlackTurn ? 1 : 2);
+                gameManager.SetLastMove(aiRow, aiCol);
                 isBlackTurn = !isBlackTurn;
 
                 if (gameManager.CheckWin()) {
@@ -320,13 +329,14 @@ void RunGameUI()
                             if (gameManager.board.GetCell(row + 1, col + 1) == 0) {
                                 // 玩家落子
                                 gameManager.board.SetCell(row + 1, col + 1, isBlackTurn ? 1 : 2);
+                                gameManager.SetLastMove(row + 1, col + 1);
                                 isBlackTurn = !isBlackTurn;
 
                                 // 检查胜负
                                 if (gameManager.CheckWin()) {
                                     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
                                         "游戏结束",
-                                        isBlackTurn ? "白方胜利!" : "黑方胜利!",
+                                        isBlackTurn ? "黑方胜利!" : "白方胜利!",
                                         window);
                                     running = false;
                                 }
@@ -341,7 +351,7 @@ void RunGameUI()
         SDL_RenderCopy(renderer, bgTexture, nullptr, nullptr);
 
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);       
-        DrawBoard(renderer, offsetX, offsetY, gameManager.board.board);
+        DrawBoard(renderer, offsetX, offsetY, gameManager.board.board, { gameManager.GetLastMoveX(), gameManager.GetLastMoveY() });
         DrawSlider(renderer, sliderX, sliderY, sliderWidth, sliderHeight, (opacity - MIN_OPACITY) / (1.0f - MIN_OPACITY));
 
         // 绘制圆形退出按钮
