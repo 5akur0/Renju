@@ -63,7 +63,7 @@ void DrawSmoothGradientCircle(SDL_Renderer* renderer, int x, int y, int radius, 
         DrawFilledCircle(renderer, x, y, r);
     }
 }
-void DrawBoard(SDL_Renderer* renderer, int offsetX, int offsetY)
+void DrawBoard(SDL_Renderer* renderer, int offsetX, int offsetY, int board[16][16])
 {
     const int lineWidth = 2; // 设置线宽
 
@@ -89,7 +89,7 @@ void DrawBoard(SDL_Renderer* renderer, int offsetX, int offsetY)
     // 绘制棋子
     for (int r = 1; r <= BOARD_SIZE; ++r) {
         for (int c = 1; c <= BOARD_SIZE; ++c) {
-            int cell = gameManager.board.GetCell(r, c);
+            int cell = board[r][c];
             if (cell != 0) {
                 int pieceRadius = CELL_SIZE / 2 - 2;
                 int centerRadius = pieceRadius * 0.3;
@@ -340,8 +340,8 @@ void RunGameUI()
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, bgTexture, nullptr, nullptr);
 
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-        DrawBoard(renderer, offsetX, offsetY);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);       
+        DrawBoard(renderer, offsetX, offsetY, gameManager.board.board);
         DrawSlider(renderer, sliderX, sliderY, sliderWidth, sliderHeight, (opacity - MIN_OPACITY) / (1.0f - MIN_OPACITY));
 
         // 绘制圆形退出按钮
