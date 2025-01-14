@@ -30,11 +30,13 @@ void AI::MakeMove(Board& board, int player)
     DECISION decision = aiAlgorithms.getDecision();
     lastMoveX = decision.pos.first;
     lastMoveY = decision.pos.second;
-    if (lastMoveX <= 0 || lastMoveY <= 0) {
+    if (lastMoveX <= 0 || lastMoveX > 15 || lastMoveY <= 0 || lastMoveY > 15) {
         lastMoveX = 8;
         lastMoveY = 8;
     }
-    board.SetCell(lastMoveX, lastMoveY, player);
+    if (board.GetCell(lastMoveX, lastMoveY) == 0) {
+        board.SetCell(lastMoveX, lastMoveY, player);
+    }
     // 结束计时，输出时间
     auto end = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
