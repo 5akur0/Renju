@@ -5,6 +5,8 @@
 #include <vector>
 #include <iostream>
 
+int mouseX, mouseY;
+
 // 定义最小透明度
 const float MIN_OPACITY = 0.3f;
 
@@ -182,10 +184,15 @@ void DrawSlider(SDL_Renderer* renderer, int x, int y, int width, int height, flo
 
 void DrawButton(SDL_Renderer* renderer, int x, int y, const char* text, bool isHovered)
 {
+    // 绘制按钮背景
     SDL_Color centerColor = isHovered ? SDL_Color { 180, 180, 180, 255 } : SDL_Color { 150, 150, 150, 255 };
     SDL_Color edgeColor = { 100, 100, 100, 255 };
 
-    DrawSmoothGradientCircle(renderer, x, y, BUTTON_RADIUS, centerColor, edgeColor, BUTTON_RADIUS * 0.3);
+    DrawSmoothGradientCircle(renderer, x, y, BUTTON_RADIUS,
+        centerColor, edgeColor, BUTTON_RADIUS * 0.3);
+
+    // 记得在主循环中处理鼠标悬停状态
+    SDL_GetMouseState(&mouseX, &mouseY);
 }
 
 // 在 RunGameUI 函数中添加按钮位置定义
@@ -324,14 +331,35 @@ void RunGameUI()
             }
         }
 
-        int mouseX = 0;
-        int mouseY = 0;
+        SDL_GetMouseState(&mouseX, &mouseY);
+
+        // 检查鼠标是否悬停在按钮上
+        bool isMouseOnSaveButton = (sqrt(pow(mouseX - saveButtonX, 2) + pow(mouseY - saveButtonY, 2)) <= BUTTON_RADIUS);
+        bool isMouseOnLoadButton = (sqrt(pow(mouseX - loadButtonX, 2) + pow(mouseY - loadButtonY, 2)) <= BUTTON_RADIUS);
 
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 running = false;
             } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+                mouseX = event.button.x;
+                mouseY = event.button.y;
+
+                // 先处理按钮点击
+                if (isMouseOnSaveButton) {
+                    gameManager.SaveGame("save.txt");
+                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
+                        "提示", "游戏已保存", window);
+                    continue; // 跳过后续的棋盘点击检测
+                }
+
+                if (isMouseOnLoadButton) {
+                    gameManager.LoadGame("save.txt");
+                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
+                        "提示", "游戏已读取", window);
+                    continue; // 跳过后续的棋盘点击检测
+                }
+
                 // 只在玩家回合才处理鼠标点击
                 if ((playerIsBlack && isBlackTurn) || (!playerIsBlack && !isBlackTurn)) {
                     int x = event.button.x - offsetX - MARGIN;
@@ -358,25 +386,6 @@ void RunGameUI()
                         }
                     }
                 }
-            } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
-                mouseX = event.button.x;
-                mouseY = event.button.y;
-
-                // 检查存档按钮点击
-                if (sqrt(pow(mouseX - saveButtonX, 2) + pow(mouseY - saveButtonY, 2)) <= BUTTON_RADIUS) {
-                    gameManager.SaveGame("save.txt");
-                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
-                        "提示", "游戏已保存", window);
-                    continue;
-                }
-
-                // 检查读档按钮点击
-                if (sqrt(pow(mouseX - loadButtonX, 2) + pow(mouseY - loadButtonY, 2)) <= BUTTON_RADIUS) {
-                    gameManager.LoadGame("save.txt");
-                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
-                        "提示", "游戏已读取", window);
-                    continue;
-                }
             }
         }
 
@@ -386,9 +395,6 @@ void RunGameUI()
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);       
         DrawBoard(renderer, offsetX, offsetY, gameManager.board.board, { gameManager.GetLastMoveX(), gameManager.GetLastMoveY() });
         DrawSlider(renderer, sliderX, sliderY, sliderWidth, sliderHeight, (opacity - MIN_OPACITY) / (1.0f - MIN_OPACITY));
-
-        bool isMouseOnSaveButton = (sqrt(pow(mouseX - saveButtonX, 2) + pow(mouseY - saveButtonY, 2)) <= BUTTON_RADIUS);
-        bool isMouseOnLoadButton = (sqrt(pow(mouseX - loadButtonX, 2) + pow(mouseY - loadButtonY, 2)) <= BUTTON_RADIUS);
 
         DrawButton(renderer, saveButtonX, saveButtonY, "存档", isMouseOnSaveButton);
         DrawButton(renderer, loadButtonX, loadButtonY, "读档", isMouseOnLoadButton);
