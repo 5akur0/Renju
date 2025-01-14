@@ -102,17 +102,17 @@ void DrawBoard(SDL_Renderer* renderer, int offsetX, int offsetY, int board[16][1
                     SDL_Color centerColor = { 0, 0, 0, 255 };
                     SDL_Color edgeColor = { 25, 25, 25, 255 };
                     if (r == lastMove.first && c == lastMove.second) {
-                        centerColor = { 255, 100, 100, 255 };
-                        edgeColor = { 225, 70, 70, 255 };
+                        centerColor = { 15, 45, 15, 255 };
+                        edgeColor = { 30, 60, 30, 255 };
                     }
                     DrawSmoothGradientCircle(renderer, pieceX, pieceY,
                         pieceRadius, centerColor, edgeColor, centerRadius);
                 } else {
-                    SDL_Color centerColor = { 255, 255, 255, 255 };
+                    SDL_Color centerColor = { 250, 250, 250, 250 };
                     SDL_Color edgeColor = { 225, 225, 225, 255 };
                     if (r == lastMove.first && c == lastMove.second) {
-                        centerColor = { 100, 100, 100, 255 };
-                        edgeColor = { 70, 70, 70, 255 };
+                        centerColor = { 225, 200, 225, 255 };
+                        edgeColor = { 200, 175, 200, 255 };
                     }
                     DrawSmoothGradientCircle(renderer, pieceX, pieceY,
                         pieceRadius, centerColor, edgeColor, centerRadius);
