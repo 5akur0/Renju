@@ -182,12 +182,22 @@ void DrawSlider(SDL_Renderer* renderer, int x, int y, int width, int height, flo
     DrawGradientRect(renderer, knobRect, knobStartColor, knobEndColor);
 }
 
-void DrawButton(SDL_Renderer* renderer, int x, int y, const char* text, bool isHovered)
+void DrawButton(SDL_Renderer* renderer, int x, int y, const char* text, bool isHovered, int color)
 {
-    // 绘制按钮背景
-    SDL_Color centerColor = isHovered ? SDL_Color { 180, 180, 180, 255 } : SDL_Color { 150, 150, 150, 255 };
-    SDL_Color edgeColor = { 100, 100, 100, 255 };
-
+    SDL_Color centerColor, edgeColor;
+    if (color == 0) //red
+    {
+        centerColor = isHovered ? SDL_Color { 215, 55, 47, 255 } : SDL_Color { 255, 95, 87, 255 };
+        edgeColor = { 235, 75, 67, 255 };
+    } else if (color == 1) // yellow
+    {
+        centerColor = isHovered ? SDL_Color { 215, 148, 23, 255} : SDL_Color { 255, 188, 46, 255 };
+        edgeColor = { 235, 168, 26, 255 };
+    } else if (color == 2) // green
+    {
+        centerColor = isHovered ? SDL_Color { 20, 160, 32, 255} : SDL_Color { 39, 200, 64, 255 };
+        edgeColor = { 30, 180, 42, 255 };
+    }
     DrawSmoothGradientCircle(renderer, x, y, BUTTON_RADIUS,
         centerColor, edgeColor, BUTTON_RADIUS * 0.3);
 
@@ -196,10 +206,12 @@ void DrawButton(SDL_Renderer* renderer, int x, int y, const char* text, bool isH
 }
 
 // 在 RunGameUI 函数中添加按钮位置定义
-int saveButtonX = BUTTON_RADIUS + 60;
-int saveButtonY = BUTTON_RADIUS + 10;
-int loadButtonX = BUTTON_RADIUS + 110;
-int loadButtonY = BUTTON_RADIUS + 10;
+int exitButtonX = BUTTON_RADIUS + 3;
+int exitButtonY = BUTTON_RADIUS + 3;
+int saveButtonX = BUTTON_RADIUS + 3 + 25;
+int saveButtonY = BUTTON_RADIUS + 3;
+int loadButtonX = BUTTON_RADIUS + 3 + 25 + 25;
+int loadButtonY = BUTTON_RADIUS + 3;
 
 // 主游戏循环
 void RunGameUI()
@@ -303,11 +315,6 @@ void RunGameUI()
     SDL_Log("Drawable Size: %d x %d", drawableWidth, drawableHeight);
     SDL_Log("OffsetX: %d, OffsetY: %d", offsetX, offsetY);
 
-    // 定义退出按钮的位置
-    int buttonX = BUTTON_RADIUS + 3;
-    int buttonY = BUTTON_RADIUS + 3;
-
-
     gameManager.NewGame();
 
     while (running) {
@@ -334,6 +341,7 @@ void RunGameUI()
         SDL_GetMouseState(&mouseX, &mouseY);
 
         // 检查鼠标是否悬停在按钮上
+        bool isMouseOnExitButton = (sqrt(pow(mouseX - exitButtonX, 2) + pow(mouseY - exitButtonY, 2)) <= BUTTON_RADIUS);
         bool isMouseOnSaveButton = (sqrt(pow(mouseX - saveButtonX, 2) + pow(mouseY - saveButtonY, 2)) <= BUTTON_RADIUS);
         bool isMouseOnLoadButton = (sqrt(pow(mouseX - loadButtonX, 2) + pow(mouseY - loadButtonY, 2)) <= BUTTON_RADIUS);
 
@@ -346,6 +354,11 @@ void RunGameUI()
                 mouseY = event.button.y;
 
                 // 先处理按钮点击
+                if (isMouseOnExitButton) {
+                    running = false;
+                    continue; // 跳过后续的棋盘点击检测
+                }
+
                 if (isMouseOnSaveButton) {
                     gameManager.SaveGame("save.txt");
                     SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
@@ -359,6 +372,7 @@ void RunGameUI()
                         "提示", "游戏已读取", window);
                     continue; // 跳过后续的棋盘点击检测
                 }
+
 
                 // 只在玩家回合才处理鼠标点击
                 if ((playerIsBlack && isBlackTurn) || (!playerIsBlack && !isBlackTurn)) {
@@ -396,13 +410,10 @@ void RunGameUI()
         DrawBoard(renderer, offsetX, offsetY, gameManager.board.board, { gameManager.GetLastMoveX(), gameManager.GetLastMoveY() });
         DrawSlider(renderer, sliderX, sliderY, sliderWidth, sliderHeight, (opacity - MIN_OPACITY) / (1.0f - MIN_OPACITY));
 
-        DrawButton(renderer, saveButtonX, saveButtonY, "存档", isMouseOnSaveButton);
-        DrawButton(renderer, loadButtonX, loadButtonY, "读档", isMouseOnLoadButton);
-
-        // 绘制圆形退出按钮
-        SDL_Color centerColor = { 250, 50, 50, 255 }; // 中心颜色
-        SDL_Color edgeColor = { 200, 0, 0, 255 }; // 边缘颜色
-        DrawSmoothGradientCircle(renderer, buttonX, buttonY, BUTTON_RADIUS, centerColor, edgeColor, BUTTON_RADIUS * 0.3);
+        // 绘制按钮
+        DrawButton(renderer, exitButtonX, exitButtonY, "退出", isMouseOnExitButton, 0);
+        DrawButton(renderer, saveButtonX, saveButtonY, "存档", isMouseOnSaveButton, 1);
+        DrawButton(renderer, loadButtonX, loadButtonY, "读档", isMouseOnLoadButton, 2);
 
         SDL_RenderPresent(renderer);
     }
