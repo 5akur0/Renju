@@ -180,6 +180,19 @@ void DrawSlider(SDL_Renderer* renderer, int x, int y, int width, int height, flo
     DrawGradientRect(renderer, knobRect, knobStartColor, knobEndColor);
 }
 
+void DrawButton(SDL_Renderer* renderer, int x, int y, const char* text, bool isHovered)
+{
+    SDL_Color centerColor = isHovered ? SDL_Color { 180, 180, 180, 255 } : SDL_Color { 150, 150, 150, 255 };
+    SDL_Color edgeColor = { 100, 100, 100, 255 };
+
+    DrawSmoothGradientCircle(renderer, x, y, BUTTON_RADIUS, centerColor, edgeColor, BUTTON_RADIUS * 0.3);
+}
+
+// 在 RunGameUI 函数中添加按钮位置定义
+int saveButtonX = BUTTON_RADIUS + 60;
+int saveButtonY = BUTTON_RADIUS + 10;
+int loadButtonX = BUTTON_RADIUS + 110;
+int loadButtonY = BUTTON_RADIUS + 10;
 
 // 主游戏循环
 void RunGameUI()
@@ -311,6 +324,9 @@ void RunGameUI()
             }
         }
 
+        int mouseX = 0;
+        int mouseY = 0;
+
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
@@ -342,6 +358,25 @@ void RunGameUI()
                         }
                     }
                 }
+            } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
+                mouseX = event.button.x;
+                mouseY = event.button.y;
+
+                // 检查存档按钮点击
+                if (sqrt(pow(mouseX - saveButtonX, 2) + pow(mouseY - saveButtonY, 2)) <= BUTTON_RADIUS) {
+                    gameManager.SaveGame("save.txt");
+                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
+                        "提示", "游戏已保存", window);
+                    continue;
+                }
+
+                // 检查读档按钮点击
+                if (sqrt(pow(mouseX - loadButtonX, 2) + pow(mouseY - loadButtonY, 2)) <= BUTTON_RADIUS) {
+                    gameManager.LoadGame("save.txt");
+                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
+                        "提示", "游戏已读取", window);
+                    continue;
+                }
             }
         }
 
@@ -351,6 +386,12 @@ void RunGameUI()
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);       
         DrawBoard(renderer, offsetX, offsetY, gameManager.board.board, { gameManager.GetLastMoveX(), gameManager.GetLastMoveY() });
         DrawSlider(renderer, sliderX, sliderY, sliderWidth, sliderHeight, (opacity - MIN_OPACITY) / (1.0f - MIN_OPACITY));
+
+        bool isMouseOnSaveButton = (sqrt(pow(mouseX - saveButtonX, 2) + pow(mouseY - saveButtonY, 2)) <= BUTTON_RADIUS);
+        bool isMouseOnLoadButton = (sqrt(pow(mouseX - loadButtonX, 2) + pow(mouseY - loadButtonY, 2)) <= BUTTON_RADIUS);
+
+        DrawButton(renderer, saveButtonX, saveButtonY, "存档", isMouseOnSaveButton);
+        DrawButton(renderer, loadButtonX, loadButtonY, "读档", isMouseOnLoadButton);
 
         // 绘制圆形退出按钮
         SDL_Color centerColor = { 250, 50, 50, 255 }; // 中心颜色

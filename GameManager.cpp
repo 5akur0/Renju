@@ -1,5 +1,6 @@
 #include "GameManager.h"
 
+#include <fstream>
 #include <SDL.h>
 #include <cctype>
 #include <cstdio>
@@ -76,19 +77,47 @@ bool GameManager::IsBoardFull()
     return true;
 }
 
-void GameManager::SaveGame()
+void GameManager::SaveGame(const std::string& filename)
 {
-    // 保存游戏的实现
+    std::ofstream outFile(saveFolder + "/" + filename);
+    if (!outFile) {
+        std::cerr << "无法创建存档文件" << std::endl;
+        return;
+    }
+
+    // 保存棋盘状态
+    for (int i = 1; i <= 15; i++) {
+        for (int j = 1; j <= 15; j++) {
+            outFile << board.GetCell(i, j) << " ";
+        }
+        outFile << "\n";
+    }
+
+    // 保存当前状态
+    outFile << lastMoveX << " " << lastMoveY << " " << moveCount;
+    outFile.close();
 }
 
-void GameManager::LoadGame()
+void GameManager::LoadGame(const std::string& filename)
 {
-    // 读取游戏的实现
-}
+    std::ifstream inFile(saveFolder + "/" + filename);
+    if (!inFile) {
+        std::cerr << "无法打开存档文件" << std::endl;
+        return;
+    }
 
-void GameManager::ClearAllSaves()
-{
-    // 清除所有存档的实现
+    // 读取棋盘状态
+    for (int i = 1; i <= 15; i++) {
+        for (int j = 1; j <= 15; j++) {
+            int value;
+            inFile >> value;
+            board.SetCell(i, j, value);
+        }
+    }
+
+    // 读取当前状态
+    inFile >> lastMoveX >> lastMoveY >> moveCount;
+    inFile.close();
 }
 
 void GameManager::QuitGame()

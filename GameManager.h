@@ -18,9 +18,9 @@ public:
     bool CheckWin();
     bool CheckDirection(int x, int y, int dx, int dy, int player);
     bool IsBoardFull();
-    void SaveGame();
-    void LoadGame();
-    void ClearAllSaves();
+    void SaveGame(const std::string& filename);
+    void LoadGame(const std::string& filename);
+    const std::string& GetSaveFolder() const { return saveFolder; }
     void QuitGame();
     void SetLastMove(int x, int y);
     int GetLastMoveX() const { return lastMoveX; }
