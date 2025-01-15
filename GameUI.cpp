@@ -450,14 +450,94 @@ void RunGameUI()
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
-                running = false;
+                const SDL_MessageBoxButtonData buttons[] = {
+                    { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "是" },
+                    { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, "否" },
+                    { 0, 2, "取消" }
+                };
+                const SDL_MessageBoxColorScheme colorScheme = {
+                    { /* background color */
+                        { 255, 255, 255 },
+                        /* text color */
+                        { 0, 0, 0 },
+                        /* button border color */
+                        { 0, 0, 0 },
+                        /* button background color */
+                        { 255, 255, 255 },
+                        /* button selected color */
+                        { 0, 0, 0 } }
+                };
+                const SDL_MessageBoxData messageboxdata = {
+                    SDL_MESSAGEBOX_INFORMATION, /* .flags */
+                    NULL, /* .window */
+                    "退出游戏", /* .title */
+                    "是否保存游戏进度?", /* .message */
+                    SDL_arraysize(buttons), /* .numbuttons */
+                    buttons, /* .buttons */
+                    &colorScheme /* .colorScheme */
+                };
+                int buttonid;
+                if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {
+                    SDL_Log("Error displaying message box");
+                    continue;
+                }
+                if (buttonid == 1) {
+                    gameManager.SaveGame("save.txt");
+                    SDL_Log("游戏已保存");
+                    running = false;
+                } else if (buttonid == 0) {
+                    SDL_Log("游戏未保存");
+                    running = false;
+                } else {
+                    SDL_Log("取消退出");
+                }
             } else if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button == SDL_BUTTON_LEFT) {
                 mouseX = event.button.x;
                 mouseY = event.button.y;
 
                 // 先处理按钮点击
                 if (isMouseOnExitButton) {
-                    running = false;
+                    const SDL_MessageBoxButtonData buttons[] = {
+                        { SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, 1, "是" },
+                        { SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, 0, "否" },
+                        { 0, 2, "取消" }
+                    };
+                    const SDL_MessageBoxColorScheme colorScheme = {
+                        { /* background color */
+                            { 255, 255, 255 },
+                            /* text color */
+                            { 0, 0, 0 },
+                            /* button border color */
+                            { 0, 0, 0 },
+                            /* button background color */
+                            { 255, 255, 255 },
+                            /* button selected color */
+                            { 0, 0, 0 } }
+                    };
+                    const SDL_MessageBoxData messageboxdata = {
+                        SDL_MESSAGEBOX_INFORMATION, /* .flags */
+                        NULL, /* .window */
+                        "退出游戏", /* .title */
+                        "是否保存游戏进度?", /* .message */
+                        SDL_arraysize(buttons), /* .numbuttons */
+                        buttons, /* .buttons */
+                        &colorScheme /* .colorScheme */
+                    };
+                    int buttonid;
+                    if (SDL_ShowMessageBox(&messageboxdata, &buttonid) < 0) {
+                        SDL_Log("Error displaying message box");
+                        continue;
+                    }
+                    if (buttonid == 1) {
+                        gameManager.SaveGame("save.txt");
+                        SDL_Log("游戏已保存");
+                        running = false;
+                    } else if (buttonid == 0) {
+                        SDL_Log("游戏未保存");
+                        running = false;
+                    } else {
+                        SDL_Log("取消退出");
+                    }
                     continue; // 跳过后续的棋盘点击检测
                 }
 

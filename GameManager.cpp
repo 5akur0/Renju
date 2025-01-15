@@ -137,8 +137,3 @@ std::pair<int, int> GameManager::GetBestMove(int player)
     ai.MakeMove(board, player);
     return { ai.GetLastMoveX(), ai.GetLastMoveY() };
 }
-
-void GameManager::PromptSaveAndQuit()
-{
-    // 提示保存并退出的实现
-}

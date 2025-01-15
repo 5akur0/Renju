@@ -21,7 +21,6 @@ public:
     int GetLastMoveX() const { return lastMoveX; }
     int GetLastMoveY() const { return lastMoveY; }
     std::pair<int, int> GetBestMove(int player);
-    void PromptSaveAndQuit();
     Board board;
 
 private:
