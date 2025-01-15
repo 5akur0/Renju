@@ -238,6 +238,11 @@ void DrawButton(SDL_Renderer* renderer, int x, int y, bool isHovered, int color,
         centerColor = isHovered ? SDL_Color { 20, 160, 32, 255 } : SDL_Color { 39, 200, 64, 255 };
         edgeColor = { 30, 180, 42, 255 };
         text = "L";
+    } else if (color == 3) // blue
+    {
+        centerColor = isHovered ? SDL_Color { 20, 120, 160, 255 } : SDL_Color { 39, 160, 200, 255 };
+        edgeColor = { 30, 140, 180, 255 };
+        text = "U";
     }
     DrawSmoothGradientCircle(renderer, x, y, BUTTON_RADIUS,
         centerColor, edgeColor, BUTTON_RADIUS * 0.7);
@@ -280,6 +285,8 @@ int saveButtonX = BUTTON_RADIUS + 3 + 25;
 int saveButtonY = BUTTON_RADIUS + 3;
 int loadButtonX = BUTTON_RADIUS + 3 + 25 + 25;
 int loadButtonY = BUTTON_RADIUS + 3;
+int undoButtonX = BUTTON_RADIUS + 3 + 25 + 25 + 25;
+int undoButtonY = BUTTON_RADIUS + 3;
 
 // 主游戏循环
 void RunGameUI()
@@ -446,6 +453,7 @@ void RunGameUI()
         bool isMouseOnExitButton = (sqrt(pow(mouseX - exitButtonX, 2) + pow(mouseY - exitButtonY, 2)) <= BUTTON_RADIUS);
         bool isMouseOnSaveButton = (sqrt(pow(mouseX - saveButtonX, 2) + pow(mouseY - saveButtonY, 2)) <= BUTTON_RADIUS);
         bool isMouseOnLoadButton = (sqrt(pow(mouseX - loadButtonX, 2) + pow(mouseY - loadButtonY, 2)) <= BUTTON_RADIUS);
+        bool isMouseOnUndoButton = (sqrt(pow(mouseX - undoButtonX, 2) + pow(mouseY - undoButtonY, 2)) <= BUTTON_RADIUS);
 
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -555,6 +563,11 @@ void RunGameUI()
                     continue; // 跳过后续的棋盘点击检测
                 }
 
+                if (isMouseOnUndoButton) {
+                    gameManager.UndoMove();
+                    continue;
+                }
+
                 // 检查是否在滑块上点击
                 if (mouseX >= sliderX && mouseX <= sliderX + sliderWidth && mouseY >= sliderY && mouseY <= sliderY + sliderHeight) {
                     dragging = true;
@@ -615,6 +628,7 @@ void RunGameUI()
         DrawButton(renderer, exitButtonX, exitButtonY, isMouseOnExitButton, 0, buttonFont);
         DrawButton(renderer, saveButtonX, saveButtonY, isMouseOnSaveButton, 1, buttonFont);
         DrawButton(renderer, loadButtonX, loadButtonY, isMouseOnLoadButton, 2, buttonFont);
+        DrawButton(renderer, undoButtonX, undoButtonY, isMouseOnUndoButton, 3, buttonFont);
 
         // 显示当前轮到谁下棋
         const char* currentPlayerText = (playerIsBlack == isBlackTurn) ? "Player's Turn" : "AI's Turn";

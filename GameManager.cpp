@@ -126,14 +126,44 @@ void GameManager::QuitGame()
     exit(0);
 }
 
-void GameManager::SetLastMove(int x, int y)
-{
-    lastMoveX = x;
-    lastMoveY = y;
-}
-
 std::pair<int, int> GameManager::GetBestMove(int player)
 {
     ai.MakeMove(board, player);
     return { ai.GetLastMoveX(), ai.GetLastMoveY() };
+}
+
+void GameManager::SetLastMove(int x, int y)
+{
+    lastMoveX = x;
+    lastMoveY = y;
+    // 把最新落子压入栈, 参数: {{行,列}, 棋子值}
+    int piece = board.GetCell(x, y);
+    moveHistory.push({ { x, y }, piece });
+}
+
+void GameManager::UndoMove()
+{
+    if (moveHistory.size() < 2) {
+        // 落子记录不够就返回
+        return;
+    }
+    // 撤销最新的两个落子
+    for (int i = 0; i < 2; ++i) {
+        auto last = moveHistory.top();
+        moveHistory.pop();
+
+        int row = last.first.first;
+        int col = last.first.second;
+        board.SetCell(row, col, 0);
+
+        // 根据需要更新 lastMoveX, lastMoveY
+        if (!moveHistory.empty()) {
+            auto newLast = moveHistory.top();
+            lastMoveX = newLast.first.first;
+            lastMoveY = newLast.first.second;
+        } else {
+            lastMoveX = 0;
+            lastMoveY = 0;
+        }
+    }
 }

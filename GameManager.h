@@ -3,8 +3,9 @@
 
 #include "AI.h"
 #include "Board.h"
+#include <stack>
 #include <string>
-
+#include <utility>
 
 class GameManager {
 public:
@@ -17,11 +18,13 @@ public:
     void LoadGame(const std::string& filename);
     const std::string& GetSaveFolder() const { return saveFolder; }
     void QuitGame();
+    void UndoMove();
     void SetLastMove(int x, int y);
     int GetLastMoveX() const { return lastMoveX; }
     int GetLastMoveY() const { return lastMoveY; }
     std::pair<int, int> GetBestMove(int player);
     Board board;
+    std::stack<std::pair<std::pair<int, int>, int>> moveHistory;
 
 private:
     AI ai;
