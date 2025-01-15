@@ -168,7 +168,7 @@ EVALUATION AIAlgorithms::evaluate(int board[16][16], int player)
     }
     // 各棋型权重
     int weight[17] = { 0, 1000000, -10000000, 50000, -100000, 400, -100000, 400, -8000, 20, -50, 20, -50, 1, -3, 1, -3 };
-
+    
     int i, j, type;
     int stat[4][17]; // 统计4个方向上每种棋型的个数
     memset(stat, 0, sizeof(stat));
