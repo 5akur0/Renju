@@ -5,11 +5,6 @@
 #include "Board.h"
 #include <string>
 
-const int BOARD_SIZE = 15;
-const int CELL_SIZE = 40;
-const int MARGIN = 40;
-
-const int BUTTON_RADIUS = 10;
 
 class GameManager {
 public:

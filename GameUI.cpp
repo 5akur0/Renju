@@ -1,4 +1,5 @@
 #include "GameManager.h"
+#include "GameUI.h"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
@@ -72,14 +73,12 @@ void DrawSmoothGradientCircle(SDL_Renderer* renderer, int x, int y, int radius, 
 }
 void DrawBoard(SDL_Renderer* renderer, int offsetX, int offsetY, int board[16][16], std::pair<int, int> lastMove)
 {
-    const int lineWidth = 2; // 设置线宽
-
     // 设置颜色为黑色
     SDL_SetRenderDrawColor(renderer, 20, 20, 20, 250);
 
     // 绘制竖线
     for (int i = 0; i < BOARD_SIZE; i++) {
-        for (int w = 0; w < lineWidth; ++w) {
+        for (int w = 0; w < LINE_WIDTH; ++w) {
             SDL_RenderDrawLine(renderer, offsetX + MARGIN + i * CELL_SIZE + w, offsetY + MARGIN,
                 offsetX + MARGIN + i * CELL_SIZE + w, offsetY + MARGIN + (BOARD_SIZE - 1) * CELL_SIZE);
         }
@@ -87,7 +86,7 @@ void DrawBoard(SDL_Renderer* renderer, int offsetX, int offsetY, int board[16][1
 
     // 绘制横线
     for (int i = 0; i < BOARD_SIZE; i++) {
-        for (int w = 0; w < lineWidth; ++w) {
+        for (int w = 0; w < LINE_WIDTH; ++w) {
             SDL_RenderDrawLine(renderer, offsetX + MARGIN, offsetY + MARGIN + i * CELL_SIZE + w,
                 offsetX + MARGIN + (BOARD_SIZE - 1) * CELL_SIZE, offsetY + MARGIN + i * CELL_SIZE + w);
         }
@@ -189,11 +188,7 @@ void DrawSlider(SDL_Renderer* renderer, int x, int y, int width, int height, flo
 
 void DrawCurrentPlayer(SDL_Renderer* renderer, const char* text, int windowSize, bool color)
 {
-<<<<<<< HEAD
     SDL_Color textColor = color ? SDL_Color { 0, 0, 0, 255 } : SDL_Color { 255, 255, 255, 255 };
-=======
-    SDL_Color textColor = color ? SDL_Color{0, 0, 0, 255} : SDL_Color{255, 255, 255, 255};
->>>>>>> 33f4b35 (添加当前玩家指示)
 
     // 检查字体是否已成功加载
     if (moveFont == nullptr) {
@@ -224,11 +219,7 @@ void DrawCurrentPlayer(SDL_Renderer* renderer, const char* text, int windowSize,
     SDL_DestroyTexture(textTexture);
 }
 
-<<<<<<< HEAD
 void DrawButton(SDL_Renderer* renderer, int x, int y, bool isHovered, int color, TTF_Font* font)
-=======
-void DrawButton(SDL_Renderer* renderer, int x, int y, bool isHovered, int color, TTF_Font *font)
->>>>>>> 33f4b35 (添加当前玩家指示)
 {
     const char* text = "";
     SDL_Color centerColor, edgeColor;
@@ -378,7 +369,7 @@ void RunGameUI()
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_RenderSetLogicalSize(renderer, windowSize, windowSize);
 
-    SDL_Surface* bgSurface = IMG_Load("pku.png");
+    SDL_Surface* bgSurface = IMG_Load("photos/zgz.png");
     if (!bgSurface) {
         SDL_Log("Unable to load image: %s", IMG_GetError());
         SDL_DestroyRenderer(renderer);
@@ -421,8 +412,8 @@ void RunGameUI()
     int drawableWidth, drawableHeight;
     SDL_GetRendererOutputSize(renderer, &drawableWidth, &drawableHeight);
 
-    int offsetX = drawableWidth / 2 - (BOARD_SIZE * CELL_SIZE + MARGIN * 2);
-    int offsetY = drawableHeight / 2 - (BOARD_SIZE * CELL_SIZE + MARGIN * 2);
+    int offsetX = (drawableWidth / 2 - (BOARD_SIZE - 1) * CELL_SIZE - LINE_WIDTH) / 2 - MARGIN;
+    int offsetY = (drawableHeight / 2- (BOARD_SIZE - 1) * CELL_SIZE - LINE_WIDTH) / 2 - MARGIN;
 
     SDL_Log("Drawable Size: %d x %d", drawableWidth, drawableHeight);
     SDL_Log("OffsetX: %d, OffsetY: %d", offsetX, offsetY);
@@ -544,13 +535,6 @@ void RunGameUI()
         DrawButton(renderer, exitButtonX, exitButtonY, isMouseOnExitButton, 0, buttonFont);
         DrawButton(renderer, saveButtonX, saveButtonY, isMouseOnSaveButton, 1, buttonFont);
         DrawButton(renderer, loadButtonX, loadButtonY, isMouseOnLoadButton, 2, buttonFont);
-<<<<<<< HEAD
-
-        // 显示当前轮到谁下棋
-        const char* currentPlayerText = isBlackTurn ? "Black's Turn" : "White's Turn";
-        DrawCurrentPlayer(renderer, currentPlayerText, windowSize, isBlackTurn);
-=======
->>>>>>> 33f4b35 (添加当前玩家指示)
 
         // 显示当前轮到谁下棋
         const char* currentPlayerText = isBlackTurn ? "Black's Turn" : "White's Turn";
