@@ -2,7 +2,7 @@
 #define BOARD_H
 
 class Board {
-public:
+  public:
     int board[16][16];
     void Initialize();
     void Print();
@@ -11,7 +11,7 @@ public:
     int ToIndex(char c) const; // 添加这个函数声明
     void SetLastMove(int x, int y);
 
-private:
+  private:
     int size;
     char ToAlpha(int i) const;
     void PrintChar(int i, int j) const;

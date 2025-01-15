@@ -5,13 +5,13 @@
 #include "Board.h"
 
 class AI {
-public:
+  public:
     AI();
-    void MakeMove(Board& board, int player);
+    void MakeMove(Board &board, int player);
     int GetLastMoveX() const;
     int GetLastMoveY() const;
 
-private:
+  private:
     int lastMoveX;
     int lastMoveY;
 };

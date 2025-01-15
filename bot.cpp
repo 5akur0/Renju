@@ -8,8 +8,8 @@
 
 using namespace std;
 
-const int DEPTH = 4; // 搜索深度
-const int NUM = 10; // 搜索数量
+const int DEPTH = 4;      // 搜索深度
+const int NUM = 10;       // 搜索数量
 const int KILLDEPTH = 16; // 杀棋搜索深度
 
 #define SIZE 15
@@ -18,23 +18,23 @@ const int KILLDEPTH = 16; // 杀棋搜索深度
 #define C_BLACK 1
 #define C_WHITE 2
 
-#define OTHER 0 // 0,其他棋型不考虑
-#define WIN 1 // 100000,白赢
-#define LOSE 2 //-10000000
-#define FLEX4 3 // 50000,白活4
-#define flex4 4 //-80000
-#define BLOCK4 5 // 400
-#define block4 6 //-80000
-#define FLEX3 7 // 400
-#define flex3 8 //-8000
-#define BLOCK3 9 // 20
+#define OTHER 0   // 0,其他棋型不考虑
+#define WIN 1     // 100000,白赢
+#define LOSE 2    //-10000000
+#define FLEX4 3   // 50000,白活4
+#define flex4 4   //-80000
+#define BLOCK4 5  // 400
+#define block4 6  //-80000
+#define FLEX3 7   // 400
+#define flex3 8   //-8000
+#define BLOCK3 9  // 20
 #define block3 10 //-40
-#define FLEX2 11 // 20
-#define flex2 12 //-40
+#define FLEX2 11  // 20
+#define flex2 12  //-40
 #define BLOCK2 13 // 1
 #define block2 14 //-2
-#define FLEX1 15 // 1
-#define flex1 16 //-2
+#define FLEX1 15  // 1
+#define flex1 16  //-2
 
 int tuple6type[4][4][4][4][4][4];
 
@@ -58,25 +58,22 @@ bool three_three();
 bool four_four();
 
 class Board {
-public:
+  public:
     int board[16][16];
-    void SetCell(int i, int j, int value)
-    {
+    void SetCell(int i, int j, int value) {
         board[i][j] = value;
     }
-    void SetLastMove(int x, int y)
-    {
+    void SetLastMove(int x, int y) {
         lastMoveX = x;
         lastMoveY = y;
     }
 
-public:
-    void init()
-    {
+  public:
+    void init() {
         memset(board, 0, sizeof(board));
     }
 
-private:
+  private:
     int lastMoveX;
     int lastMoveY;
 };
@@ -92,7 +89,7 @@ struct DECISION {
 };
 
 class AIAlgorithms {
-public:
+  public:
     void iterativeDeepening(int board[16][16], int player);
     int alphaBeta(int board[16][16], int depth, int alpha, int beta, int player);
     POINTS seekPoints(int board[16][16], int player);
@@ -105,12 +102,11 @@ public:
         return decision;
     }
 
-private:
+  private:
     DECISION decision;
 };
 
-void copyBoard(const int src[16][16], int dest[16][16])
-{
+void copyBoard(const int src[16][16], int dest[16][16]) {
     for (int i = 1; i <= 15; ++i) {
         for (int j = 1; j <= 15; ++j) {
             dest[i][j] = src[i][j];
@@ -118,8 +114,7 @@ void copyBoard(const int src[16][16], int dest[16][16])
     }
 }
 
-void reverseBoard(const int src[16][16], int dest[16][16])
-{
+void reverseBoard(const int src[16][16], int dest[16][16]) {
     for (int i = 1; i <= 15; ++i) {
         for (int j = 1; j <= 15; ++j) {
             dest[i][j] = src[i][j] == 1 ? 2 : (src[i][j] == 2 ? 1 : src[i][j]);
@@ -127,16 +122,14 @@ void reverseBoard(const int src[16][16], int dest[16][16])
     }
 }
 
-void AIAlgorithms::iterativeDeepening(int board[16][16], int player)
-{
+void AIAlgorithms::iterativeDeepening(int board[16][16], int player) {
     for (int depth = 2; depth <= DEPTH; depth += 2) {
         alphaBeta(board, depth, INT_MIN, INT_MAX, player);
     }
     return;
 }
 
-int AIAlgorithms::alphaBeta(int board[16][16], int depth, int alpha, int beta, int player)
-{
+int AIAlgorithms::alphaBeta(int board[16][16], int depth, int alpha, int beta, int player) {
     EVALUATION eval = evaluate(board, player);
     if (depth == 0) {
         POINTS P = seekPoints(board, player);
@@ -182,8 +175,7 @@ int AIAlgorithms::alphaBeta(int board[16][16], int depth, int alpha, int beta, i
     }
 }
 
-POINTS AIAlgorithms::seekPoints(int board[16][16], int player)
-{
+POINTS AIAlgorithms::seekPoints(int board[16][16], int player) {
     bool B[16][16];
     int worth[16][16];
     POINTS ret;
@@ -240,8 +232,7 @@ POINTS AIAlgorithms::seekPoints(int board[16][16], int player)
     return ret;
 }
 
-std::vector<std::pair<int, int>> AIAlgorithms::seekKill(int board[16][16], int player)
-{
+std::vector<std::pair<int, int>> AIAlgorithms::seekKill(int board[16][16], int player) {
     std::vector<std::pair<int, int>> ret;
     POINTS P = seekPoints(board, player);
     int sameBoard[16][16];
@@ -263,8 +254,7 @@ std::vector<std::pair<int, int>> AIAlgorithms::seekKill(int board[16][16], int p
     return ret;
 }
 
-bool AIAlgorithms::analysizeKill(int board[16][16], int depth, int player)
-{
+bool AIAlgorithms::analysizeKill(int board[16][16], int depth, int player) {
     EVALUATION eval = evaluate(board, player);
     if (depth == 0) {
         POINTS P = seekPoints(board, player);
@@ -321,10 +311,9 @@ bool AIAlgorithms::analysizeKill(int board[16][16], int depth, int player)
     return analysizeKill(sameBoard, depth - 1, player);
 }
 
-EVALUATION AIAlgorithms::evaluate(int board[16][16], int player)
-{
+EVALUATION AIAlgorithms::evaluate(int board[16][16], int player) {
     // 各棋型权重
-    int weight[17] = { 0, 1000000, -10000000, 50000, -100000, 400, -100000, 400, -8000, 20, -50, 20, -50, 1, -3, 1, -3 };
+    int weight[17] = {0, 1000000, -10000000, 50000, -100000, 400, -100000, 400, -8000, 20, -50, 20, -50, 1, -3, 1, -3};
 
     int i, j, type;
     int stat[4][17]; // 统计4个方向上每种棋型的个数
@@ -350,12 +339,10 @@ EVALUATION AIAlgorithms::evaluate(int board[16][16], int player)
         for (int j = 1; j <= 15; ++j) {
             if (player == C_WHITE) {
                 A[i][j] = board[i][j];
-            }
-            else {
+            } else {
                 if (board[i][j] == C_NONE) {
                     A[i][j] = C_NONE;
-                }
-                else {
+                } else {
                     A[i][j] = C_WHITE + C_BLACK - board[i][j];
                 }
             }
@@ -425,23 +412,20 @@ EVALUATION AIAlgorithms::evaluate(int board[16][16], int player)
 }
 
 class AI {
-public:
+  public:
     AI()
-        : lastMoveX(-1)
-        , lastMoveY(-1)
-    {
+        : lastMoveX(-1), lastMoveY(-1) {
     }
-    std::pair<int, int> MakeMove(Board& board, int player);
+    std::pair<int, int> MakeMove(Board &board, int player);
     int GetLastMoveX() const { return lastMoveX; }
     int GetLastMoveY() const { return lastMoveY; }
 
-private:
+  private:
     int lastMoveX;
     int lastMoveY;
 };
 
-std::pair<int, int> AI::MakeMove(Board& board, int player)
-{
+std::pair<int, int> AI::MakeMove(Board &board, int player) {
     using namespace std;
     AIAlgorithms aiAlgorithms;
     // if (!aiAlgorithms.analysizeKill(board.board, KILLDEPTH, player)) {
@@ -463,8 +447,7 @@ int preAction;
 const int currentPlayer = 0;
 const int BOARD_LEN = 15;
 
-bool isForbiddenMove(int board[16][16], int x, int y)
-{
+bool isForbiddenMove(int board[16][16], int x, int y) {
     board[x][y] = C_BLACK;
     make_state(board);
     board[x][y] = C_NONE;
@@ -484,8 +467,7 @@ bool isForbiddenMove(int board[16][16], int x, int y)
     return false;
 }
 
-void make_state(int board[16][16])
-{
+void make_state(int board[16][16]) {
     for (int i = 1; i <= BOARD_LEN; ++i) {
         for (int j = 1; j <= BOARD_LEN; ++j) {
             int idx = (i - 1) * BOARD_LEN + (j - 1);
@@ -500,8 +482,7 @@ void make_state(int board[16][16])
     }
 }
 
-bool long_connect()
-{
+bool long_connect() {
     int h = preAction / BOARD_LEN;
     int w = preAction % BOARD_LEN;
     int last_move = preAction;
@@ -570,8 +551,7 @@ bool long_connect()
     return false;
 }
 
-bool tt_special_case(std::string& m_str, size_t pos, int t_case)
-{
+bool tt_special_case(std::string &m_str, size_t pos, int t_case) {
     if (t_case == 1) { // oo111o
         if (pos + 6 < m_str.size()) {
             if (m_str[pos + 6] == '1')
@@ -586,8 +566,7 @@ bool tt_special_case(std::string& m_str, size_t pos, int t_case)
     return false;
 }
 
-bool ff_special_case(std::string& m_str, size_t pos, int f_case)
-{
+bool ff_special_case(std::string &m_str, size_t pos, int f_case) {
     if (f_case == 1) { // oo111o
         if (pos > 0) {
             if (m_str[pos - 1] == '1')
@@ -634,8 +613,7 @@ bool ff_special_case(std::string& m_str, size_t pos, int f_case)
     }
 }
 
-bool three_three()
-{
+bool three_three() {
     int h = preAction / BOARD_LEN;
     int w = preAction % BOARD_LEN;
     int last_move = preAction;
@@ -765,8 +743,7 @@ bool three_three()
     return false;
 }
 
-bool four_four()
-{
+bool four_four() {
     int h = preAction / BOARD_LEN;
     int w = preAction % BOARD_LEN;
     int last_move = preAction;
@@ -942,8 +919,7 @@ bool four_four()
     return false;
 }
 
-bool five_connect()
-{
+bool five_connect() {
     int h = preAction / BOARD_LEN;
     int w = preAction % BOARD_LEN;
     int last_player = currentPlayer ^ 1;
@@ -1022,8 +998,7 @@ bool five_connect()
     return false;
 }
 
-void init_tuple6type()
-{
+void init_tuple6type() {
     memset(tuple6type, 0, sizeof(tuple6type)); // 全部设为0
     // 白连5,ai赢
     tuple6type[2][2][2][2][2][2] = WIN;
@@ -1131,7 +1106,7 @@ void init_tuple6type()
                             else if (p6 == 2)
                                 iy++;
 
-                            if (p1 == 3 || p6 == 3) { // 有边界
+                            if (p1 == 3 || p6 == 3) {     // 有边界
                                 if (p1 == 3 && p6 != 3) { // 左边界
                                     // 白冲4
                                     if (ix == 0 && iy == 4) { // 若右边有空位是活4也没关系，因为活4权重远大于冲4，再加上冲4权重变化可以不计
@@ -1235,8 +1210,7 @@ void init_tuple6type()
     }
 }
 
-int main()
-{
+int main() {
     // set parameters
     int turnID = 0;
     int tmppp = 0;

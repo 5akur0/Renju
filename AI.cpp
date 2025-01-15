@@ -8,14 +8,11 @@
 #include <ctime>
 
 AI::AI()
-    : lastMoveX(-1)
-    , lastMoveY(-1)
-{
+    : lastMoveX(-1), lastMoveY(-1) {
     std::srand(std::time(nullptr)); // 初始化随机数种子
 }
 
-void AI::MakeMove(Board& board, int player)
-{
+void AI::MakeMove(Board &board, int player) {
     using namespace std;
 
     // 开始计时
@@ -47,12 +44,10 @@ void AI::MakeMove(Board& board, int player)
     cout << "AI思考时间: " << duration.count() << "毫秒" << endl;
 }
 
-int AI::GetLastMoveX() const
-{
+int AI::GetLastMoveX() const {
     return lastMoveX;
 }
 
-int AI::GetLastMoveY() const
-{
+int AI::GetLastMoveY() const {
     return lastMoveY;
 }
