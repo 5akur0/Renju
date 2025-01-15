@@ -2,14 +2,12 @@
 #include <bits/stdc++.h>
 
 // 获取决策结果
-DECISION AIAlgorithms::getDecision() const
-{
+DECISION AIAlgorithms::getDecision() const {
     return decision;
 }
 
 // Function to copy the board
-void copyBoard(const int src[16][16], int dest[16][16])
-{
+void copyBoard(const int src[16][16], int dest[16][16]) {
     for (int i = 1; i <= 15; ++i) {
         for (int j = 1; j <= 15; ++j) {
             dest[i][j] = src[i][j];
@@ -18,8 +16,7 @@ void copyBoard(const int src[16][16], int dest[16][16])
 }
 
 // Function to reverse the board
-void reverseBoard(const int src[16][16], int dest[16][16])
-{
+void reverseBoard(const int src[16][16], int dest[16][16]) {
     for (int i = 1; i <= 15; ++i) {
         for (int j = 1; j <= 15; ++j) {
             if (src[i][j] == C_BLACK) {
@@ -46,8 +43,7 @@ void reverseBoard(const int src[16][16], int dest[16][16])
 //     return;
 // }
 
-int AIAlgorithms::alphaBeta(int board[16][16], int depth, int alpha, int beta, int player)
-{
+int AIAlgorithms::alphaBeta(int board[16][16], int depth, int alpha, int beta, int player) {
     EVALUATION eval = evaluate(board, player);
     if (depth == 0) {
         POINTS P = seekPoints(board, player);
@@ -101,8 +97,7 @@ int AIAlgorithms::alphaBeta(int board[16][16], int depth, int alpha, int beta, i
     }
 }
 
-POINTS AIAlgorithms::seekPoints(int board[16][16], int player)
-{
+POINTS AIAlgorithms::seekPoints(int board[16][16], int player) {
     bool B[16][16]; // 局部搜索标记数组
     int worth[16][16];
     POINTS best_points;
@@ -159,8 +154,7 @@ POINTS AIAlgorithms::seekPoints(int board[16][16], int player)
     return best_points;
 }
 
-EVALUATION AIAlgorithms::evaluate(int board[16][16], int player)
-{
+EVALUATION AIAlgorithms::evaluate(int board[16][16], int player) {
     int rboard[16][16];
     copyBoard(board, rboard);
     if (player == C_BLACK) {
@@ -251,8 +245,7 @@ EVALUATION AIAlgorithms::evaluate(int board[16][16], int player)
     return eval;
 }
 
-std::vector<std::pair<int, int>> AIAlgorithms::seekKill(int board[16][16], int player)
-{
+std::vector<std::pair<int, int>> AIAlgorithms::seekKill(int board[16][16], int player) {
     std::vector<std::pair<int, int>> ret;
     POINTS P = seekPoints(board, player);
     int sameBoard[16][16];
@@ -274,8 +267,7 @@ std::vector<std::pair<int, int>> AIAlgorithms::seekKill(int board[16][16], int p
     return ret;
 }
 
-bool AIAlgorithms::analysizeKill(int board[16][16], int depth, int player)
-{
+bool AIAlgorithms::analysizeKill(int board[16][16], int depth, int player) {
     EVALUATION eval = evaluate(board, player);
     if (depth == 0) {
         POINTS P = seekPoints(board, player);

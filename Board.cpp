@@ -8,8 +8,7 @@
 
 using namespace std;
 
-void Board::Initialize()
-{
+void Board::Initialize() {
     for (int i = 1; i <= 15; i++) {
         for (int j = 1; j <= 15; j++) {
             board[i][j] = 0;
@@ -19,8 +18,7 @@ void Board::Initialize()
     lastMoveY = -1;
 }
 
-void Board::Print()
-{
+void Board::Print() {
     for (int i = 15; i >= 1; i--) {
         printf("%2d ", i);
         for (int j = 1; j <= 15; j++) {
@@ -35,12 +33,15 @@ void Board::Print()
     printf("\n");
 }
 
-int Board::GetCell(int i, int j) const { return board[i][j]; }
+int Board::GetCell(int i, int j) const {
+    return board[i][j];
+}
 
-void Board::SetCell(int i, int j, int value) { board[i][j] = value; }
+void Board::SetCell(int i, int j, int value) {
+    board[i][j] = value;
+}
 
-char Board::ToAlpha(int i) const
-{
+char Board::ToAlpha(int i) const {
     if (1 <= i && i <= 26) {
         return 'a' + i - 1;
     } else if (27 <= i && i <= 52) {
@@ -49,8 +50,7 @@ char Board::ToAlpha(int i) const
     return ' '; // invalid
 }
 
-int Board::ToIndex(char c) const
-{
+int Board::ToIndex(char c) const {
     if (islower(c)) {
         return c - 'a' + 1;
     } else if (isupper(c)) {
@@ -59,8 +59,7 @@ int Board::ToIndex(char c) const
     return -1; // invalid
 }
 
-void Board::PrintChar(int i, int j) const
-{
+void Board::PrintChar(int i, int j) const {
     if (board[i][j] == 0) {
         if (i == 15) {
             if (j == 1) {
@@ -102,8 +101,7 @@ void Board::PrintChar(int i, int j) const
     }
 }
 
-void Board::SetLastMove(int x, int y)
-{
+void Board::SetLastMove(int x, int y) {
     lastMoveX = x;
     lastMoveY = y;
 }

@@ -8,15 +8,15 @@
 #include <utility>
 
 class GameManager {
-public:
+  public:
     GameManager();
     void NewGame();
     bool CheckWin();
     bool CheckDirection(int x, int y, int dx, int dy, int player);
     bool IsBoardFull();
-    void SaveGame(const std::string& filename);
-    void LoadGame(const std::string& filename);
-    const std::string& GetSaveFolder() const { return saveFolder; }
+    void SaveGame(const std::string &filename);
+    void LoadGame(const std::string &filename);
+    const std::string &GetSaveFolder() const { return saveFolder; }
     void QuitGame();
     void UndoMove();
     void SetLastMove(int x, int y);
@@ -26,7 +26,7 @@ public:
     Board board;
     std::stack<std::pair<std::pair<int, int>, int>> moveHistory;
 
-private:
+  private:
     AI ai;
     int moveCount;
     int lastMoveX;

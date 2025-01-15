@@ -2,8 +2,7 @@
 
 int tuple6type[4][4][4][4][4][4];
 
-void init_tuple6type()
-{
+void init_tuple6type() {
     memset(tuple6type, 0, sizeof(tuple6type)); // 全部设为0
     // 白连5,ai赢
     tuple6type[2][2][2][2][2][2] = WIN;
@@ -111,7 +110,7 @@ void init_tuple6type()
                             else if (p6 == 2)
                                 iy++;
 
-                            if (p1 == 3 || p6 == 3) { // 有边界
+                            if (p1 == 3 || p6 == 3) {     // 有边界
                                 if (p1 == 3 && p6 != 3) { // 左边界
                                     // 白冲4
                                     if (ix == 0 && iy == 4) { // 若右边有空位是活4也没关系，因为活4权重远大于冲4，再加上冲4权重变化可以不计

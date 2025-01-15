@@ -13,29 +13,23 @@ namespace fs = std::__fs::filesystem;
 using namespace std;
 
 GameManager::GameManager()
-    : board()
-    , ai()
-    , moveCount(0)
-    , saveFolder("存档")
-{
+    : board(), ai(), moveCount(0), saveFolder("存档") {
     fs::create_directory(saveFolder);
 }
 
-void GameManager::NewGame()
-{
+void GameManager::NewGame() {
     board.Initialize();
     moveCount = 0;
     lastMoveX = -1;
     lastMoveY = -1;
 }
 
-bool GameManager::CheckWin()
-{
+bool GameManager::CheckWin() {
     int player = board.GetCell(lastMoveX, lastMoveY);
     if (player != 0) {
-        if (CheckDirection(lastMoveX, lastMoveY, 1, 0, player) || // 水平方向
-            CheckDirection(lastMoveX, lastMoveY, 0, 1, player) || // 垂直方向
-            CheckDirection(lastMoveX, lastMoveY, 1, 1, player) || // 斜向右下
+        if (CheckDirection(lastMoveX, lastMoveY, 1, 0, player) ||  // 水平方向
+            CheckDirection(lastMoveX, lastMoveY, 0, 1, player) ||  // 垂直方向
+            CheckDirection(lastMoveX, lastMoveY, 1, 1, player) ||  // 斜向右下
             CheckDirection(lastMoveX, lastMoveY, 1, -1, player)) { // 斜向右上
             return true;
         }
@@ -43,8 +37,7 @@ bool GameManager::CheckWin()
     return false;
 }
 
-bool GameManager::CheckDirection(int x, int y, int dx, int dy, int player)
-{
+bool GameManager::CheckDirection(int x, int y, int dx, int dy, int player) {
     int count = 1;
     for (int i = 1; i < 5; ++i) {
         int nx = x + i * dx;
@@ -65,8 +58,7 @@ bool GameManager::CheckDirection(int x, int y, int dx, int dy, int player)
     return count >= 5;
 }
 
-bool GameManager::IsBoardFull()
-{
+bool GameManager::IsBoardFull() {
     for (int i = 1; i <= 15; ++i) {
         for (int j = 1; j <= 15; ++j) {
             if (board.GetCell(i, j) == C_NONE) {
@@ -77,8 +69,7 @@ bool GameManager::IsBoardFull()
     return true;
 }
 
-void GameManager::SaveGame(const std::string& filename)
-{
+void GameManager::SaveGame(const std::string &filename) {
     std::ofstream outFile(saveFolder + "/" + filename);
     if (!outFile) {
         std::cerr << "无法创建存档文件" << std::endl;
@@ -98,8 +89,7 @@ void GameManager::SaveGame(const std::string& filename)
     outFile.close();
 }
 
-void GameManager::LoadGame(const std::string& filename)
-{
+void GameManager::LoadGame(const std::string &filename) {
     std::ifstream inFile(saveFolder + "/" + filename);
     if (!inFile) {
         std::cerr << "无法打开存档文件" << std::endl;
@@ -120,29 +110,25 @@ void GameManager::LoadGame(const std::string& filename)
     inFile.close();
 }
 
-void GameManager::QuitGame()
-{
+void GameManager::QuitGame() {
     printf("程序退出。\n");
     exit(0);
 }
 
-std::pair<int, int> GameManager::GetBestMove(int player)
-{
+std::pair<int, int> GameManager::GetBestMove(int player) {
     ai.MakeMove(board, player);
-    return { ai.GetLastMoveX(), ai.GetLastMoveY() };
+    return {ai.GetLastMoveX(), ai.GetLastMoveY()};
 }
 
-void GameManager::SetLastMove(int x, int y)
-{
+void GameManager::SetLastMove(int x, int y) {
     lastMoveX = x;
     lastMoveY = y;
     // 把最新落子压入栈, 参数: {{行,列}, 棋子值}
     int piece = board.GetCell(x, y);
-    moveHistory.push({ { x, y }, piece });
+    moveHistory.push({{x, y}, piece});
 }
 
-void GameManager::UndoMove()
-{
+void GameManager::UndoMove() {
     if (moveHistory.size() < 2) {
         // 落子记录不够就返回
         return;

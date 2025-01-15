@@ -6,8 +6,8 @@
 #include "ForbiddenMove.h"
 #include "utility"
 
-const int DEPTH = 4; // 搜索深度
-const int NUM = 10; // 搜索数量
+const int DEPTH = 4;      // 搜索深度
+const int NUM = 10;       // 搜索数量
 const int KILLDEPTH = 16; // 杀棋搜索深度
 
 struct POINTS { // 最佳落子位置,[0]分数最高,[9]分数最低
@@ -17,11 +17,11 @@ struct POINTS { // 最佳落子位置,[0]分数最高,[9]分数最低
 
 struct DECISION {
     std::pair<int, int> pos; // 位置
-    int eval; // 对分数的评估
+    int eval;                // 对分数的评估
 };
 
 class AIAlgorithms {
-public:
+  public:
     void iterativeDeepening(int board[16][16], int player);
     int alphaBeta(int board[16][16], int depth, int alpha, int beta, int player);
     POINTS seekPoints(int board[16][16], int player);
@@ -29,7 +29,8 @@ public:
     DECISION getDecision() const;
     std::vector<std::pair<int, int>> seekKill(int board[16][16], int player);
     bool analysizeKill(int board[16][16], int depth, int player);
-private:
+
+  private:
     DECISION decision;
 };
 
