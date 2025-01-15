@@ -7,9 +7,10 @@
 #include <string>
 #include <vector>
 using std::string;
-TTF_Font* font = nullptr;
 
 int mouseX, mouseY;
+TTF_Font* buttonFont = nullptr;
+TTF_Font* moveFont = nullptr;
 
 // 定义最小透明度
 const float MIN_OPACITY = 0.3f;
@@ -186,23 +187,64 @@ void DrawSlider(SDL_Renderer* renderer, int x, int y, int width, int height, flo
     DrawGradientRect(renderer, knobRect, knobStartColor, knobEndColor);
 }
 
-void DrawButton(SDL_Renderer* renderer, int x, int y, bool isHovered, int color)
+void DrawCurrentPlayer(SDL_Renderer* renderer, const char* text, int windowSize, bool color)
+{
+<<<<<<< HEAD
+    SDL_Color textColor = color ? SDL_Color { 0, 0, 0, 255 } : SDL_Color { 255, 255, 255, 255 };
+=======
+    SDL_Color textColor = color ? SDL_Color{0, 0, 0, 255} : SDL_Color{255, 255, 255, 255};
+>>>>>>> 33f4b35 (添加当前玩家指示)
+
+    // 检查字体是否已成功加载
+    if (moveFont == nullptr) {
+        SDL_Log("Move font not loaded");
+        return;
+    }
+
+    SDL_Surface* textSurface = TTF_RenderText_Blended(moveFont, text, textColor);
+    if (textSurface == nullptr) {
+        SDL_Log("Unable to render text surface: %s", TTF_GetError());
+        return;
+    }
+
+    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+    if (textTexture == nullptr) {
+        SDL_Log("Unable to create texture from surface: %s", SDL_GetError());
+        SDL_FreeSurface(textSurface);
+        return;
+    }
+
+    int textWidth = textSurface->w;
+    int textHeight = textSurface->h;
+    SDL_FreeSurface(textSurface);
+
+    // 计算文本位置，使其居中显示
+    SDL_Rect textRect = { (windowSize - textWidth) / 2, 50, textWidth, textHeight };
+    SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+    SDL_DestroyTexture(textTexture);
+}
+
+<<<<<<< HEAD
+void DrawButton(SDL_Renderer* renderer, int x, int y, bool isHovered, int color, TTF_Font* font)
+=======
+void DrawButton(SDL_Renderer* renderer, int x, int y, bool isHovered, int color, TTF_Font *font)
+>>>>>>> 33f4b35 (添加当前玩家指示)
 {
     const char* text = "";
     SDL_Color centerColor, edgeColor;
-    if (color == 0) //red
+    if (color == 0) // red
     {
         centerColor = isHovered ? SDL_Color { 215, 55, 47, 255 } : SDL_Color { 255, 95, 87, 255 };
         edgeColor = { 235, 75, 67, 255 };
         text = "Q";
     } else if (color == 1) // yellow
     {
-        centerColor = isHovered ? SDL_Color { 215, 148, 23, 255} : SDL_Color { 255, 188, 46, 255 };
+        centerColor = isHovered ? SDL_Color { 215, 148, 23, 255 } : SDL_Color { 255, 188, 46, 255 };
         edgeColor = { 235, 168, 26, 255 };
         text = "S";
     } else if (color == 2) // green
     {
-        centerColor = isHovered ? SDL_Color { 20, 160, 32, 255} : SDL_Color { 39, 200, 64, 255 };
+        centerColor = isHovered ? SDL_Color { 20, 160, 32, 255 } : SDL_Color { 39, 200, 64, 255 };
         edgeColor = { 30, 180, 42, 255 };
         text = "L";
     }
@@ -269,9 +311,21 @@ void RunGameUI()
         return;
     }
 
-    font = TTF_OpenFont("assets/button_font.ttf", 18);
-    if (!font) {
-        SDL_Log("Unable to load font: %s", TTF_GetError());
+    // 加载 button_font.ttf 字体
+    buttonFont = TTF_OpenFont("assets/button_font.ttf", 18);
+    if (!buttonFont) {
+        SDL_Log("Unable to load button font: %s", TTF_GetError());
+        TTF_Quit();
+        IMG_Quit();
+        SDL_Quit();
+        return;
+    }
+
+    // 加载 move_font.ttf 字体
+    moveFont = TTF_OpenFont("assets/move_font.ttf", 30);
+    if (!moveFont) {
+        SDL_Log("Unable to load move font: %s", TTF_GetError());
+        TTF_CloseFont(buttonFont);
         TTF_Quit();
         IMG_Quit();
         SDL_Quit();
@@ -309,12 +363,12 @@ void RunGameUI()
     window = SDL_CreateWindow("Renju GUI", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
         windowSize, windowSize, SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
 
-
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
         SDL_Log("Unable to create renderer: %s", SDL_GetError());
         SDL_DestroyWindow(window);
-        TTF_CloseFont(font);
+        TTF_CloseFont(buttonFont);
+        TTF_CloseFont(moveFont);
         TTF_Quit();
         IMG_Quit();
         SDL_Quit();
@@ -329,7 +383,8 @@ void RunGameUI()
         SDL_Log("Unable to load image: %s", IMG_GetError());
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
-        TTF_CloseFont(font);
+        TTF_CloseFont(buttonFont);
+        TTF_CloseFont(moveFont);
         TTF_Quit();
         IMG_Quit();
         SDL_Quit();
@@ -342,7 +397,8 @@ void RunGameUI()
         SDL_Log("Unable to create texture: %s", SDL_GetError());
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
-        TTF_CloseFont(font);
+        TTF_CloseFont(buttonFont);
+        TTF_CloseFont(moveFont);
         TTF_Quit();
         IMG_Quit();
         SDL_Quit();
@@ -351,7 +407,6 @@ void RunGameUI()
 
     float opacity = 0.8f;
     SDL_SetWindowOpacity(window, opacity);
-
 
     GameManager gameManager;
     gameManager.NewGame();
@@ -389,8 +444,7 @@ void RunGameUI()
                     continue;
                 }
                 isBlackTurn = !isBlackTurn;
-            }
-            else {
+            } else {
                 std::cout << "AI落子错误" << gameManager.board.GetCell(aiRow, aiCol) << std::endl;
             }
         }
@@ -482,22 +536,34 @@ void RunGameUI()
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, bgTexture, nullptr, nullptr);
 
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);       
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         DrawBoard(renderer, offsetX, offsetY, gameManager.board.board, { gameManager.GetLastMoveX(), gameManager.GetLastMoveY() });
         DrawSlider(renderer, sliderX, sliderY, sliderWidth, sliderHeight, (opacity - MIN_OPACITY) / (1.0f - MIN_OPACITY));
 
         // 绘制按钮
-        DrawButton(renderer, exitButtonX, exitButtonY, isMouseOnExitButton, 0);
-        DrawButton(renderer, saveButtonX, saveButtonY, isMouseOnSaveButton, 1);
-        DrawButton(renderer, loadButtonX, loadButtonY, isMouseOnLoadButton, 2);
+        DrawButton(renderer, exitButtonX, exitButtonY, isMouseOnExitButton, 0, buttonFont);
+        DrawButton(renderer, saveButtonX, saveButtonY, isMouseOnSaveButton, 1, buttonFont);
+        DrawButton(renderer, loadButtonX, loadButtonY, isMouseOnLoadButton, 2, buttonFont);
+<<<<<<< HEAD
 
+        // 显示当前轮到谁下棋
+        const char* currentPlayerText = isBlackTurn ? "Black's Turn" : "White's Turn";
+        DrawCurrentPlayer(renderer, currentPlayerText, windowSize, isBlackTurn);
+=======
+>>>>>>> 33f4b35 (添加当前玩家指示)
+
+        // 显示当前轮到谁下棋
+        const char* currentPlayerText = isBlackTurn ? "Black's Turn" : "White's Turn";
+        DrawCurrentPlayer(renderer, currentPlayerText, windowSize, isBlackTurn);
+        
         SDL_RenderPresent(renderer);
     }
 
     SDL_DestroyTexture(bgTexture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
-    TTF_CloseFont(font);
+    TTF_CloseFont(buttonFont);
+    TTF_CloseFont(moveFont);
     TTF_Quit();
     IMG_Quit();
     SDL_Quit();

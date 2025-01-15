@@ -41,8 +41,8 @@ void AI::MakeMove(Board& board, int player)
     // 结束计时，输出时间
     auto end = chrono::high_resolution_clock::now();
     auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
-    if (duration.count() < 200) {
-        this_thread::sleep_for(chrono::milliseconds(200) - duration);
+    if (duration.count() < 1000) {
+        this_thread::sleep_for(chrono::milliseconds(1000) - duration);
     }
     cout << "AI思考时间: " << duration.count() << "毫秒" << endl;
 }
