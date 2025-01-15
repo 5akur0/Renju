@@ -117,8 +117,8 @@ void DrawBoard(SDL_Renderer* renderer, int offsetX, int offsetY, int board[16][1
                     SDL_Color centerColor = { 250, 250, 250, 250 };
                     SDL_Color edgeColor = { 225, 225, 225, 255 };
                     if (r == lastMove.first && c == lastMove.second) {
-                        centerColor = { 200, 160, 200, 255 };
-                        edgeColor = { 180, 140, 180, 255 };
+                        centerColor = { 220, 200, 220, 255 };
+                        edgeColor = { 200, 180, 200, 255 };
                     }
                     DrawSmoothGradientCircle(renderer, pieceX, pieceY,
                         pieceRadius, centerColor, edgeColor, centerRadius);
@@ -214,7 +214,7 @@ void DrawCurrentPlayer(SDL_Renderer* renderer, const char* text, int windowSize,
     SDL_FreeSurface(textSurface);
 
     // 计算文本位置，使其居中显示
-    SDL_Rect textRect = { (windowSize - textWidth) / 2, 50, textWidth, textHeight };
+    SDL_Rect textRect = { (windowSize - textWidth) / 2, MARGIN, textWidth, textHeight };
     SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
     SDL_DestroyTexture(textTexture);
 }
@@ -396,7 +396,7 @@ void RunGameUI()
         return;
     }
 
-    float opacity = 0.8f;
+    float opacity = 1;
     SDL_SetWindowOpacity(window, opacity);
 
     GameManager gameManager;
