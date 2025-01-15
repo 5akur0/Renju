@@ -1,9 +1,13 @@
 #include "GameManager.h"
 #include <SDL.h>
 #include <SDL_image.h>
+#include <SDL_ttf.h>
 #include <cmath>
-#include <vector>
 #include <iostream>
+#include <string>
+#include <vector>
+using std::string;
+TTF_Font* font = nullptr;
 
 int mouseX, mouseY;
 
@@ -182,27 +186,58 @@ void DrawSlider(SDL_Renderer* renderer, int x, int y, int width, int height, flo
     DrawGradientRect(renderer, knobRect, knobStartColor, knobEndColor);
 }
 
-void DrawButton(SDL_Renderer* renderer, int x, int y, const char* text, bool isHovered, int color)
+void DrawButton(SDL_Renderer* renderer, int x, int y, bool isHovered, int color)
 {
+    const char* text = "";
     SDL_Color centerColor, edgeColor;
     if (color == 0) //red
     {
         centerColor = isHovered ? SDL_Color { 215, 55, 47, 255 } : SDL_Color { 255, 95, 87, 255 };
         edgeColor = { 235, 75, 67, 255 };
+        text = "Q";
     } else if (color == 1) // yellow
     {
         centerColor = isHovered ? SDL_Color { 215, 148, 23, 255} : SDL_Color { 255, 188, 46, 255 };
         edgeColor = { 235, 168, 26, 255 };
+        text = "S";
     } else if (color == 2) // green
     {
         centerColor = isHovered ? SDL_Color { 20, 160, 32, 255} : SDL_Color { 39, 200, 64, 255 };
         edgeColor = { 30, 180, 42, 255 };
+        text = "L";
     }
     DrawSmoothGradientCircle(renderer, x, y, BUTTON_RADIUS,
         centerColor, edgeColor, BUTTON_RADIUS * 0.7);
 
-    // 记得在主循环中处理鼠标悬停状态
-    SDL_GetMouseState(&mouseX, &mouseY);
+    // 渲染文本
+    SDL_Color textColor = { 255, 255, 255, 255 };
+
+    // 检查字体是否已成功加载
+    if (font == nullptr) {
+        SDL_Log("Font not loaded");
+        return;
+    }
+
+    SDL_Surface* textSurface = TTF_RenderText_Blended(font, text, textColor);
+    if (textSurface == nullptr) {
+        SDL_Log("Unable to render text surface: %s", TTF_GetError());
+        return;
+    }
+
+    SDL_Texture* textTexture = SDL_CreateTextureFromSurface(renderer, textSurface);
+    if (textTexture == nullptr) {
+        SDL_Log("Unable to create texture from surface: %s", SDL_GetError());
+        SDL_FreeSurface(textSurface);
+        return;
+    }
+
+    int textWidth = textSurface->w;
+    int textHeight = textSurface->h;
+    SDL_FreeSurface(textSurface);
+
+    SDL_Rect textRect = { x - textWidth / 2, y - textHeight / 2, textWidth, textHeight };
+    SDL_RenderCopy(renderer, textTexture, NULL, &textRect);
+    SDL_DestroyTexture(textTexture);
 }
 
 // 在 RunGameUI 函数中添加按钮位置定义
@@ -218,6 +253,28 @@ void RunGameUI()
 {
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         SDL_Log("Unable to initialize SDL: %s", SDL_GetError());
+        return;
+    }
+
+    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
+        SDL_Log("Unable to initialize SDL_image: %s", IMG_GetError());
+        SDL_Quit();
+        return;
+    }
+
+    if (TTF_Init() == -1) {
+        SDL_Log("Unable to initialize SDL_ttf: %s", TTF_GetError());
+        IMG_Quit();
+        SDL_Quit();
+        return;
+    }
+
+    font = TTF_OpenFont("assets/button_font.ttf", 18);
+    if (!font) {
+        SDL_Log("Unable to load font: %s", TTF_GetError());
+        TTF_Quit();
+        IMG_Quit();
+        SDL_Quit();
         return;
     }
 
@@ -253,17 +310,12 @@ void RunGameUI()
         windowSize, windowSize, SDL_WINDOW_SHOWN | SDL_WINDOW_ALLOW_HIGHDPI);
 
 
-    if (!(IMG_Init(IMG_INIT_PNG) & IMG_INIT_PNG)) {
-        SDL_Log("Unable to initialize SDL_image: %s", IMG_GetError());
-        SDL_Quit();
-        return;
-    }
-
-
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer) {
         SDL_Log("Unable to create renderer: %s", SDL_GetError());
         SDL_DestroyWindow(window);
+        TTF_CloseFont(font);
+        TTF_Quit();
         IMG_Quit();
         SDL_Quit();
         return;
@@ -277,16 +329,21 @@ void RunGameUI()
         SDL_Log("Unable to load image: %s", IMG_GetError());
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
+        TTF_CloseFont(font);
+        TTF_Quit();
         IMG_Quit();
         SDL_Quit();
         return;
     }
+
     SDL_Texture* bgTexture = SDL_CreateTextureFromSurface(renderer, bgSurface);
     SDL_FreeSurface(bgSurface);
     if (!bgTexture) {
         SDL_Log("Unable to create texture: %s", SDL_GetError());
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
+        TTF_CloseFont(font);
+        TTF_Quit();
         IMG_Quit();
         SDL_Quit();
         return;
@@ -430,9 +487,9 @@ void RunGameUI()
         DrawSlider(renderer, sliderX, sliderY, sliderWidth, sliderHeight, (opacity - MIN_OPACITY) / (1.0f - MIN_OPACITY));
 
         // 绘制按钮
-        DrawButton(renderer, exitButtonX, exitButtonY, "退出", isMouseOnExitButton, 0);
-        DrawButton(renderer, saveButtonX, saveButtonY, "存档", isMouseOnSaveButton, 1);
-        DrawButton(renderer, loadButtonX, loadButtonY, "读档", isMouseOnLoadButton, 2);
+        DrawButton(renderer, exitButtonX, exitButtonY, isMouseOnExitButton, 0);
+        DrawButton(renderer, saveButtonX, saveButtonY, isMouseOnSaveButton, 1);
+        DrawButton(renderer, loadButtonX, loadButtonY, isMouseOnLoadButton, 2);
 
         SDL_RenderPresent(renderer);
     }
@@ -440,6 +497,8 @@ void RunGameUI()
     SDL_DestroyTexture(bgTexture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    TTF_CloseFont(font);
+    TTF_Quit();
     IMG_Quit();
     SDL_Quit();
 }
