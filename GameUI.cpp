@@ -537,7 +537,7 @@ void RunGameUI()
         DrawButton(renderer, loadButtonX, loadButtonY, isMouseOnLoadButton, 2, buttonFont);
 
         // 显示当前轮到谁下棋
-        const char* currentPlayerText = isBlackTurn ? "Black's Turn" : "White's Turn";
+        const char* currentPlayerText = (playerIsBlack == isBlackTurn) ? "Player's Turn" : "AI's Turn";
         DrawCurrentPlayer(renderer, currentPlayerText, windowSize, isBlackTurn);
         
         SDL_RenderPresent(renderer);
