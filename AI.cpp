@@ -16,14 +16,10 @@ void AI::MakeMove(Board &board, int player) {
     using namespace std;
 
     // 开始计时
-    auto start = chrono::high_resolution_clock::now();
+    auto start = chrono::steady_clock::now();
 
     AIAlgorithms aiAlgorithms;
-    // if (aiAlgorithms.analysizeKill(board.board, KILLDEPTH, player)) {
-    //     cout << "AI杀棋" << endl;
-    // } else {
-    aiAlgorithms.alphaBeta(board.board, DEPTH, INT_MIN, INT_MAX, player);
-    // }
+    aiAlgorithms.alphaBeta(board.board, DEPTH, INT_MIN, INT_MAX);
     DECISION decision = aiAlgorithms.getDecision();
     lastMoveX = decision.pos.first;
     lastMoveY = decision.pos.second;
@@ -36,7 +32,7 @@ void AI::MakeMove(Board &board, int player) {
     cout << "AI落子: " << lastMoveX << " " << lastMoveY << endl;
 
     // 结束计时，输出时间
-    auto end = chrono::high_resolution_clock::now();
+    auto end = chrono::steady_clock::now();
     auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
     if (duration.count() < 1000) {
         this_thread::sleep_for(chrono::milliseconds(1000) - duration);

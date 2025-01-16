@@ -324,7 +324,7 @@ void RunGameUI() {
         IMG_Quit();
         SDL_Quit();
         return;
-    }
+    };
 
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
     SDL_RenderSetLogicalSize(renderer, windowSize, windowSize);

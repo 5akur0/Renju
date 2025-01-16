@@ -22,13 +22,10 @@ struct DECISION {
 
 class AIAlgorithms {
   public:
-    void iterativeDeepening(int board[16][16], int player);
-    int alphaBeta(int board[16][16], int depth, int alpha, int beta, int player);
-    POINTS seekPoints(int board[16][16], int player);
-    EVALUATION evaluate(int board[16][16], int player);
+    int alphaBeta(int board[16][16], int depth, int alpha, int beta);
+    POINTS seekPoints(int board[16][16]);
+    EVALUATION evaluate(int board[16][16]);
     DECISION getDecision() const;
-    std::vector<std::pair<int, int>> seekKill(int board[16][16], int player);
-    bool analysizeKill(int board[16][16], int depth, int player);
 
   private:
     DECISION decision;

@@ -2,12 +2,14 @@
 #include <bits/stdc++.h>
 
 // 获取决策结果
-DECISION AIAlgorithms::getDecision() const {
+DECISION AIAlgorithms::getDecision() const
+{
     return decision;
 }
 
 // Function to copy the board
-void copyBoard(const int src[16][16], int dest[16][16]) {
+void copyBoard(const int src[16][16], int dest[16][16])
+{
     for (int i = 1; i <= 15; ++i) {
         for (int j = 1; j <= 15; ++j) {
             dest[i][j] = src[i][j];
@@ -16,7 +18,8 @@ void copyBoard(const int src[16][16], int dest[16][16]) {
 }
 
 // Function to reverse the board
-void reverseBoard(const int src[16][16], int dest[16][16]) {
+void reverseBoard(const int src[16][16], int dest[16][16])
+{
     for (int i = 1; i <= 15; ++i) {
         for (int j = 1; j <= 15; ++j) {
             if (src[i][j] == C_BLACK) {
@@ -30,43 +33,24 @@ void reverseBoard(const int src[16][16], int dest[16][16]) {
     }
 }
 
-// 迭代加深的 AlphaBeta 搜索
-// void AIAlgorithms::iterativeDeepening(int board[16][16], int player)
-// {
-//     for (int depth = 2; depth <= DEPTH; depth += 2) {
-//         alphaBeta(board, depth, INT_MIN, INT_MAX, player);
-//         // 如果找到胜利走法，提前退出
-//         if (decision.eval >= 1000000) {
-//             return;
-//         }
-//     }
-//     return;
-// }
-
-int AIAlgorithms::alphaBeta(int board[16][16], int depth, int alpha, int beta, int player) {
-    EVALUATION eval = evaluate(board, player);
-    if (depth == 0) {
-        POINTS P = seekPoints(board, player);
-        return P.score[0];
-    }
-    if (eval.result != R_DRAW) {
-        return eval.score;
-    }
-    if (depth % 2 == 0) { // max层
-        POINTS P = seekPoints(board, player);
+int AIAlgorithms::alphaBeta(int board[16][16], int depth, int alpha, int beta)
+{
+    gameResult RESULT = evaluate(board).result;
+    if (depth == 0 || RESULT != R_DRAW) { // 如果模拟落子可以分出输赢，那么直接返回结果，不需要再搜索
+        if (depth == 0) {
+            POINTS P;
+            P = seekPoints(board); // 生成最佳的可能落子位置
+            return P.score[0]; // 返回最佳位置对应的最高分
+        } else {
+            return evaluate(board).score;
+        }
+    } else if (depth % 2 == 0) { // max层,我方(白)决策
+        POINTS P = seekPoints(board);
         for (int i = 0; i < NUM; ++i) {
             int sameBoard[16][16];
             copyBoard(board, sameBoard);
-            sameBoard[P.pos[i].first][P.pos[i].second] = player; // 模拟己方落子
-            int a = alphaBeta(sameBoard, depth - 1, alpha, beta, 3 - player);
-            if (a >= 1000000) {
-                if (depth == DEPTH) {
-                    decision.pos.first = P.pos[i].first;
-                    decision.pos.second = P.pos[i].second;
-                    decision.eval = a;
-                }
-                return a;
-            }
+            sameBoard[P.pos[i].first][P.pos[i].second] = C_WHITE; // 模拟己方落子,不能用board,否则可能改变board的信息
+            int a = alphaBeta(sameBoard, depth - 1, alpha, beta);
             if (a > alpha) {
                 alpha = a;
                 if (depth == DEPTH) {
@@ -79,15 +63,15 @@ int AIAlgorithms::alphaBeta(int board[16][16], int depth, int alpha, int beta, i
                 break; // 剪枝
         }
         return alpha;
-    } else { // min层,敌方决策
+    } else { // min层,敌方(黑)决策
         int rBoard[16][16];
         reverseBoard(board, rBoard);
-        POINTS P = seekPoints(rBoard, 3 - player); // 找对于敌方的最佳位置,需要将棋盘不同颜色反转
+        POINTS P = seekPoints(rBoard); // 找对于黑子的最佳位置,需要将棋盘不同颜色反转,因为seekPoint是求白色方的最佳位置
         for (int i = 0; i < NUM; ++i) {
             int sameBoard[16][16];
             copyBoard(board, sameBoard);
-            sameBoard[P.pos[i].first][P.pos[i].second] = 3 - player; // 模拟敌方落子
-            int a = alphaBeta(sameBoard, depth - 1, alpha, beta, player);
+            sameBoard[P.pos[i].first][P.pos[i].second] = C_BLACK; // 模拟敌方落子
+            int a = alphaBeta(sameBoard, depth - 1, alpha, beta);
             if (a < beta)
                 beta = a;
             if (beta <= alpha)
@@ -97,7 +81,8 @@ int AIAlgorithms::alphaBeta(int board[16][16], int depth, int alpha, int beta, i
     }
 }
 
-POINTS AIAlgorithms::seekPoints(int board[16][16], int player) {
+POINTS AIAlgorithms::seekPoints(int board[16][16])
+{
     bool B[16][16]; // 局部搜索标记数组
     int worth[16][16];
     POINTS best_points;
@@ -120,15 +105,13 @@ POINTS AIAlgorithms::seekPoints(int board[16][16], int player) {
             }
         }
     }
+
     for (int i = 1; i <= 15; ++i) {
         for (int j = 1; j <= 15; ++j) {
             worth[i][j] = INT_MIN;
-            if (player == C_BLACK && B[i][j] && board[i][j] == C_NONE && isForbiddenMove(board, i, j)) {
-                B[i][j] = false;
-            }
             if (board[i][j] == C_NONE && B[i][j] == true) {
-                board[i][j] = player;
-                worth[i][j] = evaluate(board, player).score;
+                board[i][j] = C_WHITE;
+                worth[i][j] = evaluate(board).score;
                 board[i][j] = C_NONE;
             }
         }
@@ -136,7 +119,7 @@ POINTS AIAlgorithms::seekPoints(int board[16][16], int player) {
 
     int w;
     for (int k = 0; k < NUM; ++k) {
-        w = INT_MIN;
+        w = -INT_MAX;
         for (int i = 1; i <= 15; ++i) {
             for (int j = 1; j <= 15; ++j) {
                 if (worth[i][j] > w) {
@@ -146,23 +129,19 @@ POINTS AIAlgorithms::seekPoints(int board[16][16], int player) {
                 }
             }
         }
-        board[best_points.pos[k].first][best_points.pos[k].second] = player;
-        best_points.score[k] = evaluate(board, player).score;
+        board[best_points.pos[k].first][best_points.pos[k].second] = C_WHITE;
+        best_points.score[k] = evaluate(board).score;
         board[best_points.pos[k].first][best_points.pos[k].second] = C_NONE;
-        worth[best_points.pos[k].first][best_points.pos[k].second] = INT_MIN; // 清除掉上一点,计算下一点的位置和分数
+        worth[best_points.pos[k].first][best_points.pos[k].second] = -INT_MAX; // 清除掉上一点,计算下一点的位置和分数
     }
     return best_points;
 }
 
-EVALUATION AIAlgorithms::evaluate(int board[16][16], int player) {
-    int rboard[16][16];
-    copyBoard(board, rboard);
-    if (player == C_BLACK) {
-        reverseBoard(board, rboard);
-    }
+EVALUATION AIAlgorithms::evaluate(int board[16][16])
+{
     // 各棋型权重
     int weight[17] = { 0, 1000000, -10000000, 50000, -100000, 400, -100000, 400, -8000, 20, -50, 20, -50, 1, -3, 1, -3 };
-    
+
     int i, j, type;
     int stat[4][17]; // 统计4个方向上每种棋型的个数
     memset(stat, 0, sizeof(stat));
@@ -181,7 +160,7 @@ EVALUATION AIAlgorithms::evaluate(int board[16][16], int player) {
         A[16][j] = 3;
     for (int i = 1; i <= 15; ++i)
         for (int j = 1; j <= 15; ++j)
-            A[i][j] = rboard[i][j];
+            A[i][j] = board[i][j];
 
     // 判断横向棋型
     for (i = 1; i <= 15; ++i) {
@@ -241,85 +220,5 @@ EVALUATION AIAlgorithms::evaluate(int board[16][16], int player) {
         eval.result = R_BLACK;
 
     eval.score = score;
-
     return eval;
-}
-
-std::vector<std::pair<int, int>> AIAlgorithms::seekKill(int board[16][16], int player) {
-    std::vector<std::pair<int, int>> ret;
-    POINTS P = seekPoints(board, player);
-    int sameBoard[16][16];
-    copyBoard(board, sameBoard);
-
-    for (int i = 0; i < NUM; ++i) {
-        sameBoard[P.pos[i].first][P.pos[i].second] = player;
-        if (evaluate(sameBoard, player).STAT[WIN] > 0) {
-            ret.push_back(P.pos[i]);
-        } else if (evaluate(sameBoard, player).STAT[FLEX4] > evaluate(board, player).STAT[FLEX4]) {
-            ret.push_back(P.pos[i]);
-        } else if (evaluate(sameBoard, player).STAT[BLOCK4] > evaluate(board, player).STAT[BLOCK4]) {
-            ret.push_back(P.pos[i]);
-        } else if (evaluate(sameBoard, player).STAT[FLEX3] > evaluate(board, player).STAT[FLEX3]) {
-            ret.push_back(P.pos[i]);
-        }
-        sameBoard[P.pos[i].first][P.pos[i].second] = C_NONE;
-    }
-    return ret;
-}
-
-bool AIAlgorithms::analysizeKill(int board[16][16], int depth, int player) {
-    EVALUATION eval = evaluate(board, player);
-    if (depth == 0) {
-        POINTS P = seekPoints(board, player);
-        board[P.pos[0].first][P.pos[0].second] = player;
-        gameResult RESULT = evaluate(board, player).result;
-        if ((RESULT == R_WHITE && player == C_WHITE) || (RESULT == R_BLACK && player == C_BLACK)) {
-            return true;
-        }
-        return false;
-    }
-    if ((eval.result == R_WHITE && player == C_WHITE) || (eval.result == R_BLACK && player == C_BLACK)) {
-        return true;
-    }
-    if ((eval.result == R_WHITE && player == C_BLACK) || (eval.result == R_BLACK && player == C_WHITE)) {
-        return false;
-    }
-    if (depth % 2 == 0) { // 我方决策
-        if (depth == KILLDEPTH || depth == KILLDEPTH - 2) {
-            POINTS P = seekPoints(board, player);
-            for (int i = 0; i < NUM; ++i) {
-                int sameBoard[16][16];
-                copyBoard(board, sameBoard);
-                sameBoard[P.pos[i].first][P.pos[i].second] = player;
-                if (analysizeKill(sameBoard, depth - 1, player)) {
-                    if (depth == KILLDEPTH) {
-                        decision.pos.first = P.pos[i].first;
-                        decision.pos.second = P.pos[i].second;
-                        decision.eval = INT_MAX;
-                    }
-                    return true;
-                }
-            }
-            return false;
-        }
-        std::vector<std::pair<int, int>> kill = seekKill(board, player);
-        if (kill.size() == 0) {
-            return false;
-        }
-        for (auto k : kill) {
-            int sameBoard[16][16];
-            copyBoard(board, sameBoard);
-            sameBoard[k.first][k.second] = player;
-            if (analysizeKill(sameBoard, depth - 1, player)) {
-                return true;
-            }
-        }
-        return false;
-    }
-    // 敌方决策，选择最好的位置
-    POINTS PP = seekPoints(board, 3 - player);
-    int sameBoard[16][16];
-    copyBoard(board, sameBoard);
-    sameBoard[PP.pos[0].first][PP.pos[0].second] = 3 - player;
-    return analysizeKill(sameBoard, depth - 1, player);
 }
