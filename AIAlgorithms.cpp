@@ -33,7 +33,7 @@ void reverseBoard(const int src[16][16], int dest[16][16])
     }
 }
 
-int AIAlgorithms::alphaBeta(int board[16][16], int depth, int alpha, int beta)
+int AIAlgorithms::alphaBeta(int board[16][16], int depth, int alpha, int beta) // 我方白子
 {
     gameResult RESULT = evaluate(board).result;
     if (depth == 0 || RESULT != R_DRAW) { // 如果模拟落子可以分出输赢，那么直接返回结果，不需要再搜索
