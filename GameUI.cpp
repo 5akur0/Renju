@@ -392,6 +392,34 @@ void RunGameUI() {
         if ((!playerIsBlack && isBlackTurn) || (playerIsBlack && !isBlackTurn)) {
             auto [aiRow, aiCol] = gameManager.GetBestMove(isBlackTurn ? 1 : 2);
             if (gameManager.board.GetCell(aiRow, aiCol) == 0) {
+                // 检查禁手，如果禁手直接判AI输，结束游戏
+                if (!playerIsBlack && isForbiddenMove(gameManager.board.board, aiRow, aiCol)) {
+                    gameManager.board.SetCell(aiRow, aiCol, isBlackTurn ? 1 : 2);
+                    gameManager.SetLastMove(aiRow, aiCol);
+                    SDL_RenderClear(renderer);
+                    SDL_RenderCopy(renderer, bgTexture, nullptr, nullptr);
+                    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                    DrawBoard(renderer, offsetX, offsetY, gameManager.board.board, {gameManager.GetLastMoveX(), gameManager.GetLastMoveY()});
+                    const char *winnerText = "You Win!";
+                    DrawCurrentPlayer(renderer, winnerText, windowSize, {50, 50, 255, 255});
+                    SDL_RenderPresent(renderer);
+                    SDL_Delay(1000);
+                    for (int i = 3; i > 0; i--) {
+                        SDL_RenderClear(renderer);
+                        SDL_RenderCopy(renderer, bgTexture, nullptr, nullptr);
+                        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                        DrawBoard(renderer, offsetX, offsetY, gameManager.board.board, {gameManager.GetLastMoveX(), gameManager.GetLastMoveY()});
+                        std::string counterText = "Auto Exit in ";
+                        char countText[10];
+                        std::snprintf(countText, sizeof(countText), "%d", i);
+                        counterText += countText;
+                        DrawCurrentPlayer(renderer, counterText.c_str(), windowSize, {75, 75, 255, 255});
+                        SDL_RenderPresent(renderer);
+                        SDL_Delay(1000);
+                    }
+                    running = false;
+                    continue;
+                }
                 gameManager.board.SetCell(aiRow, aiCol, isBlackTurn ? 1 : 2);
                 gameManager.SetLastMove(aiRow, aiCol);
                 if (gameManager.CheckWin()) {
