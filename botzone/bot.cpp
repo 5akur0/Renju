@@ -444,7 +444,6 @@ std::pair<int, int> AI::MakeMove(Board &board, int player) {
 
 int state[225];
 int preAction;
-const int currentPlayer = 0;
 const int BOARD_LEN = 15;
 
 bool isForbiddenMove(int board[16][16], int x, int y) {
@@ -495,7 +494,7 @@ bool long_connect() {
         }
         ret = 0;
         for (int k = i; k < i + 6; k++) {
-            if (state[k] != (currentPlayer ^ 1)) {
+            if (state[k] != 1) {
                 ret = 1;
                 break;
             }
@@ -510,7 +509,7 @@ bool long_connect() {
         }
         ret = 0;
         for (int k = i; k < i + 6 * BOARD_LEN; k += BOARD_LEN) {
-            if (state[k] != (currentPlayer ^ 1)) {
+            if (state[k] != 1) {
                 ret = 1;
                 break;
             }
@@ -525,7 +524,7 @@ bool long_connect() {
         }
         ret = 0;
         for (int k = i; k < i + 6 * BOARD_LEN + 6; k += BOARD_LEN + 1) {
-            if (state[k] != (currentPlayer ^ 1)) {
+            if (state[k] != 1) {
                 ret = 1;
                 break;
             }
@@ -540,7 +539,7 @@ bool long_connect() {
         }
         ret = 0;
         for (int k = i; k > i - 6 * BOARD_LEN + 6; k += (-(BOARD_LEN) + 1)) {
-            if (state[k] != (currentPlayer ^ 1)) {
+            if (state[k] != 1) {
                 ret = 1;
                 break;
             }
@@ -922,7 +921,7 @@ bool four_four() {
 bool five_connect() {
     int h = preAction / BOARD_LEN;
     int w = preAction % BOARD_LEN;
-    int last_player = currentPlayer ^ 1;
+    int last_player = 1;
     int last_move = preAction;
     int i, j;
     int ret;

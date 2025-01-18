@@ -1,5 +1,6 @@
 #include "GameManager.h"
 #include "GameUI.h"
+#include "ForbiddenMove.h"
 #include <SDL.h>
 #include <SDL_image.h>
 #include <SDL_ttf.h>
@@ -7,6 +8,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+
 using std::string;
 
 int mouseX, mouseY;
@@ -143,9 +145,7 @@ void DrawSlider(SDL_Renderer *renderer, int x, int y, int width, int height, flo
     SDL_RenderFillRect(renderer, &sliderRect);
 }
 
-void DrawCurrentPlayer(SDL_Renderer *renderer, const char *text, int windowSize, bool color) {
-    SDL_Color textColor = color ? SDL_Color{0, 0, 0, 255} : SDL_Color{255, 255, 255, 255};
-
+void DrawCurrentPlayer(SDL_Renderer *renderer, const char *text, int windowSize, SDL_Color textColor) {
     // 检查字体是否已成功加载
     if (moveFont == nullptr) {
         SDL_Log("Move font not loaded");
@@ -381,16 +381,51 @@ void RunGameUI() {
     gameManager.NewGame();
 
     while (running) {
+        SDL_GetMouseState(&mouseX, &mouseY);
+
+        // 检查鼠标是否悬停在按钮上
+        bool isMouseOnExitButton = (sqrt(pow(mouseX - exitButtonX, 2) + pow(mouseY - exitButtonY, 2)) <= BUTTON_RADIUS);
+        bool isMouseOnSaveButton = (sqrt(pow(mouseX - saveButtonX, 2) + pow(mouseY - saveButtonY, 2)) <= BUTTON_RADIUS);
+        bool isMouseOnLoadButton = (sqrt(pow(mouseX - loadButtonX, 2) + pow(mouseY - loadButtonY, 2)) <= BUTTON_RADIUS);
+        bool isMouseOnUndoButton = (sqrt(pow(mouseX - undoButtonX, 2) + pow(mouseY - undoButtonY, 2)) <= BUTTON_RADIUS);
+
         if ((!playerIsBlack && isBlackTurn) || (playerIsBlack && !isBlackTurn)) {
             auto [aiRow, aiCol] = gameManager.GetBestMove(isBlackTurn ? 1 : 2);
             if (gameManager.board.GetCell(aiRow, aiCol) == 0) {
                 gameManager.board.SetCell(aiRow, aiCol, isBlackTurn ? 1 : 2);
                 gameManager.SetLastMove(aiRow, aiCol);
                 if (gameManager.CheckWin()) {
-                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
-                        "游戏结束",
-                        isBlackTurn ? "黑方胜利!" : "白方胜利!",
-                        window);
+                    SDL_RenderClear(renderer);
+                    SDL_RenderCopy(renderer, bgTexture, nullptr, nullptr);
+                    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                    DrawBoard(renderer, offsetX, offsetY, gameManager.board.board, {gameManager.GetLastMoveX(), gameManager.GetLastMoveY()});
+                    DrawSlider(renderer, sliderX, sliderY, sliderWidth, sliderHeight, (opacity - MIN_OPACITY) / (1.0f - MIN_OPACITY));
+                    // 绘制按钮
+                    DrawButton(renderer, exitButtonX, exitButtonY, isMouseOnExitButton, 0, buttonFont);
+                    DrawButton(renderer, saveButtonX, saveButtonY, isMouseOnSaveButton, 1, buttonFont);
+                    DrawButton(renderer, loadButtonX, loadButtonY, isMouseOnLoadButton, 2, buttonFont);
+                    DrawButton(renderer, undoButtonX, undoButtonY, isMouseOnUndoButton, 3, buttonFont);
+                    // 显示游戏结束（You Win or You Lose）
+                    const char *winnerText = "You Lose!";
+                    DrawCurrentPlayer(renderer, winnerText, windowSize, {255, 50, 50, 255});
+                    SDL_RenderPresent(renderer);
+                    // 展示一秒
+                    SDL_Delay(1000);
+
+                    // 显示五秒退出倒计时
+                    for (int i = 3; i > 0; i--) {
+                        SDL_RenderClear(renderer);
+                        SDL_RenderCopy(renderer, bgTexture, nullptr, nullptr);
+                        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                        DrawBoard(renderer, offsetX, offsetY, gameManager.board.board, {gameManager.GetLastMoveX(), gameManager.GetLastMoveY()});
+                        std::string counterText = "Auto Exit in ";
+                        char countText[10];
+                        std::snprintf(countText, sizeof(countText), "%d", i);
+                        counterText += countText;
+                        DrawCurrentPlayer(renderer, counterText.c_str(), windowSize, {255, 75, 75, 255});
+                        SDL_RenderPresent(renderer);
+                        SDL_Delay(1000);
+                    }
                     running = false;
                     continue;
                 }
@@ -399,14 +434,6 @@ void RunGameUI() {
                 std::cout << "AI落子错误" << gameManager.board.GetCell(aiRow, aiCol) << std::endl;
             }
         }
-
-        SDL_GetMouseState(&mouseX, &mouseY);
-
-        // 检查鼠标是否悬停在按钮上
-        bool isMouseOnExitButton = (sqrt(pow(mouseX - exitButtonX, 2) + pow(mouseY - exitButtonY, 2)) <= BUTTON_RADIUS);
-        bool isMouseOnSaveButton = (sqrt(pow(mouseX - saveButtonX, 2) + pow(mouseY - saveButtonY, 2)) <= BUTTON_RADIUS);
-        bool isMouseOnLoadButton = (sqrt(pow(mouseX - loadButtonX, 2) + pow(mouseY - loadButtonY, 2)) <= BUTTON_RADIUS);
-        bool isMouseOnUndoButton = (sqrt(pow(mouseX - undoButtonX, 2) + pow(mouseY - undoButtonY, 2)) <= BUTTON_RADIUS);
 
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
@@ -530,6 +557,14 @@ void RunGameUI() {
                     if (x >= 0 && y >= 0) {
                         int col = (x + CELL_SIZE / 2) / CELL_SIZE;
                         int row = (y + CELL_SIZE / 2) / CELL_SIZE;
+                        // 检查禁手
+                        if (isForbiddenMove(gameManager.board.board, row + 1, col + 1)) {
+                            const char *forbiddenText = "Forbidden Move!";
+                            DrawCurrentPlayer(renderer, forbiddenText, windowSize, {255, 50, 50, 255});
+                            SDL_RenderPresent(renderer);
+                            SDL_Delay(1000);
+                            continue;
+                        }
                         if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE) {
                             if (gameManager.board.GetCell(row + 1, col + 1) == 0) {
                                 // 玩家落子
@@ -537,11 +572,45 @@ void RunGameUI() {
                                 gameManager.SetLastMove(row + 1, col + 1);
                                 // 检查胜负
                                 if (gameManager.CheckWin()) {
-                                    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION,
-                                        "游戏结束",
-                                        isBlackTurn ? "黑方胜利!" : "白方胜利!",
-                                        window);
+                                    SDL_RenderClear(renderer);
+                                    SDL_RenderCopy(renderer, bgTexture, nullptr, nullptr);
+                                    SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                                    DrawBoard(renderer, offsetX, offsetY, gameManager.board.board, {gameManager.GetLastMoveX(), gameManager.GetLastMoveY()});
+                                    DrawSlider(renderer, sliderX, sliderY, sliderWidth, sliderHeight, (opacity - MIN_OPACITY) / (1.0f - MIN_OPACITY));
+                                    // 绘制按钮
+                                    DrawButton(renderer, exitButtonX, exitButtonY, isMouseOnExitButton, 0, buttonFont);
+                                    DrawButton(renderer, saveButtonX, saveButtonY, isMouseOnSaveButton, 1, buttonFont);
+                                    DrawButton(renderer, loadButtonX, loadButtonY, isMouseOnLoadButton, 2, buttonFont);
+                                    DrawButton(renderer, undoButtonX, undoButtonY, isMouseOnUndoButton, 3, buttonFont);
+                                    // 显示游戏结束（You Win or You Lose）
+                                    const char *winnerText = "You Win!";
+                                    DrawCurrentPlayer(renderer, winnerText, windowSize, {255, 50, 50, 255});
+                                    SDL_RenderPresent(renderer);
+                                    // 展示一秒
+                                    SDL_Delay(1000);
+
+                                    // 显示五秒退出倒计时
+                                    for (int i = 3; i > 0; i--) {
+                                        SDL_RenderClear(renderer);
+                                        SDL_RenderCopy(renderer, bgTexture, nullptr, nullptr);
+                                        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+                                        DrawBoard(renderer, offsetX, offsetY, gameManager.board.board, {gameManager.GetLastMoveX(), gameManager.GetLastMoveY()});
+                                        DrawSlider(renderer, sliderX, sliderY, sliderWidth, sliderHeight, (opacity - MIN_OPACITY) / (1.0f - MIN_OPACITY));
+                                        // 绘制按钮
+                                        DrawButton(renderer, exitButtonX, exitButtonY, isMouseOnExitButton, 0, buttonFont);
+                                        DrawButton(renderer, saveButtonX, saveButtonY, isMouseOnSaveButton, 1, buttonFont);
+                                        DrawButton(renderer, loadButtonX, loadButtonY, isMouseOnLoadButton, 2, buttonFont);
+                                        DrawButton(renderer, undoButtonX, undoButtonY, isMouseOnUndoButton, 3, buttonFont);
+                                        std::string counterText = "Auto Exit in ";
+                                        char countText[10];
+                                        std::snprintf(countText, sizeof(countText), "%d", i);
+                                        counterText += countText;
+                                        DrawCurrentPlayer(renderer, counterText.c_str(), windowSize, {255, 75, 75, 255});
+                                        SDL_RenderPresent(renderer);
+                                        SDL_Delay(1000);
+                                    }
                                     running = false;
+                                    continue;
                                 }
                                 isBlackTurn = !isBlackTurn;
                             }
@@ -581,7 +650,8 @@ void RunGameUI() {
 
         // 显示当前轮到谁下棋
         const char *currentPlayerText = (playerIsBlack == isBlackTurn) ? "Player's Turn" : "AI's Turn";
-        DrawCurrentPlayer(renderer, currentPlayerText, windowSize, isBlackTurn);
+        SDL_Color currentPlayerColor = (playerIsBlack == isBlackTurn) ? SDL_Color{0, 0, 0, 255} : SDL_Color{255, 255, 255, 255};
+        DrawCurrentPlayer(renderer, currentPlayerText, windowSize, currentPlayerColor);
 
         SDL_RenderPresent(renderer);
     }

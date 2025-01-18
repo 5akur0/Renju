@@ -8,8 +8,8 @@
 
 using namespace std;
 
-const int DEPTH = 4;      // 搜索深度
-const int NUM = 10;       // 搜索数量
+const int DEPTH = 6;      // 搜索深度
+const int NUM = 6;       // 搜索数量
 
 #define SIZE 15
 
