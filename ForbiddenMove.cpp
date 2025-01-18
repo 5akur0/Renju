@@ -5,12 +5,12 @@
 
 #include "Evaluate.h"
 
+using namespace std;
+
 int state[225];
 int preAction;
 const int currentPlayer = 0;
 const int BOARD_LEN = 15;
-
-using namespace std;
 
 bool isForbiddenMove(int board[16][16], int x, int y)
 {
