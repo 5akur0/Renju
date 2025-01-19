@@ -7,6 +7,8 @@
 
 using namespace std;
 
+// 直接从BotZone复制裁判代码V1
+
 int state[225];
 int preAction;
 const int currentPlayer = 0;

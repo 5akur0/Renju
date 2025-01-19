@@ -585,16 +585,16 @@ void RunGameUI() {
                     if (x >= 0 && y >= 0) {
                         int col = (x + CELL_SIZE / 2) / CELL_SIZE;
                         int row = (y + CELL_SIZE / 2) / CELL_SIZE;
-                        // 检查禁手
-                        if (isForbiddenMove(gameManager.board.board, row + 1, col + 1)) {
-                            const char *forbiddenText = "Forbidden Move!";
-                            DrawCurrentPlayer(renderer, forbiddenText, windowSize, {255, 50, 50, 255});
-                            SDL_RenderPresent(renderer);
-                            SDL_Delay(1000);
-                            continue;
-                        }
                         if (col >= 0 && col < BOARD_SIZE && row >= 0 && row < BOARD_SIZE) {
                             if (gameManager.board.GetCell(row + 1, col + 1) == 0) {
+                                // 检查禁手
+                                if (isForbiddenMove(gameManager.board.board, row + 1, col + 1)) {
+                                    const char *forbiddenText = "Forbidden Move!";
+                                    DrawCurrentPlayer(renderer, forbiddenText, windowSize, {255, 50, 50, 255});
+                                    SDL_RenderPresent(renderer);
+                                    SDL_Delay(1000);
+                                    continue;
+                                }
                                 // 玩家落子
                                 gameManager.board.SetCell(row + 1, col + 1, isBlackTurn ? 1 : 2);
                                 gameManager.SetLastMove(row + 1, col + 1);
