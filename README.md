@@ -1,4 +1,4 @@
 # Renju
-24秋WHF计算概论A大作业
+Please build using arm64
 
-请使用M系列MacBook编译
+Final Project for Introduction to Computing Course
